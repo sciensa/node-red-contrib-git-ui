@@ -10,17 +10,20 @@
 <body class="git-section">
   <form id="git-form"> 
     <div class="form-group">
-        <label for="node-input-message" hidden="true" id="resultNonSuccess" style="color:red"/>
-        <label for="node-input-message" hidden="true" id="resultSuccess" style="color:green"/>
+        <div class="alert alert-danger" style="margin-top: 20px" role="alert" hidden="true" id="resultNonSuccess">
+            <strong id="errorTitle"></strong>
+            <div id="errorMessage"></div>
+        </div>
+        <div class="alert alert-success" style="margin-top: 20px" role="alert" hidden="true" id="resultSuccess"></div>
     </div>
     <div class="form-group">
-        <label for="coment">Comment</label>
+        <label for="coment">Message</label>
         <div class="controls">
            <textarea name="comment" id="message" rows="8" cols="40" class="span5" placeholder="The message you want to send to us."></textarea>
         </div>
     </div>
       <div class="form-row" align="right">
-          <button type="submit" id="node-input" class="btn btn-default">Save</button>
+          <button type="submit" id="node-input" class="btn btn-default">Commit</button>
       </div>
     <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
   </form>
@@ -43,19 +46,29 @@
                 type: "POST",
                 dataType: "json",
                 data: $('#git-form').serialize(),
+                beforeSend: function (r) {
+                    $("#node-input").prop('disabled', true);
+                },
                 success: function (r) {
                     showSuccess('Done!');
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    showError('Commit failed!'); 
+                    showError('Commit failed!',jqXHR.responseText)                    
+                },
+                complete: function(r) {
+                    $("#node-input").prop('disabled', false);
+                    setTimeout(function() {
+                        $('.alert').fadeOut('fast');
+                    }, 5000);
                 }
             });
         }
     });
-    function showError(message){
+    function showError(title, message){
         $('#resultNonSuccess').show();
-        $('#resultNonSuccess').html(message);
+        $('#errorMessage').html(message);
         $('#resultSuccess').hide();
+        $('#errorTitle').html(title);
     }
     function showSuccess(message){
         $('#resultSuccess').show();

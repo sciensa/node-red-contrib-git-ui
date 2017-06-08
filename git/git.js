@@ -59,7 +59,7 @@ module.exports = function(RED) {
             if (err) {
                 res.status(500).send(err);
             } else {
-                res.status(200).send("OK");
+                res.status(200).send({status:"OK"});
             }
         });
     });
