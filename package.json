@@ -29,7 +29,10 @@
         "Rogério R. Alcântara <rogerio.alcantara@sciensa.com> (http://github.com/roalcantara)",
         "Valter Junior <valter.junior@sciensa.com> (http://github.com/valterjnr)"
     ],
-    "dependencies": {
+    "devDependencies": {
+      "eslint": "^3.19.0"
+    },
+    "dependencies": {  
         "i18next-client": "1.10.3",
         "simple-git": "1.73.0"
     }
