@@ -1,0 +1,53 @@
+<script type="text/x-red" data-template-name="git">
+     
+
+</script>
+
+<script type="text/x-red" data-help-name="git">
+    <p>Describes an HTTP API using git.</p>
+</script>
+
+<script type="text/javascript">
+var gitDocUrl;
+(function() {
+    RED.nodes.registerType('git', {
+        category: 'config',
+        exclusive: true,
+        defaults: {
+            summary: {
+                value: ""
+            },
+            description: {
+                value: ""
+            }
+        },
+                label: function() {
+            return this.name||"git";
+        },
+        onpaletteadd: function() {
+            //setup git-ui
+            var gitUi;
+            var content = $("<div/>",{
+                id:"tab-git-ui", style:"position: relative; padding: 0px 4px; height: 100%; overflow: hidden"
+            });
+
+          RED.events.on("deploy",function() {
+               //some code
+            });
+            gitDocUrl = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + RED.settings.httpNodeRoot + 'http-api/git.json';
+            var gitFrame = $("<iframe/>", {
+                id:"git-ui-frame",
+                style:"margin: 0; padding: 0; border: none; width: 100%; height: 100%",
+                src: "git-ui/git-ui.html"
+            }).appendTo(content);
+            RED.sidebar.addTab({
+                id: "git-ui",
+                label: this._("git.sidebar.label"),
+                name: this._("git.sidebar.name"),
+                content: content
+            });
+        }
+
+    });
+})();
+</script>

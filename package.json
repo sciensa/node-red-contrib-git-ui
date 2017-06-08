@@ -1,0 +1,36 @@
+{
+    "name": "node-red-contrib-git-ui",
+    "version": "0.1.0",
+    "description": "",
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/sciensa/node-red-contrib-git-ui.git"
+    },
+    "homepage": "https://github.com/sciensa/node-red-contrib-git-ui#readme",
+    "bugs": {
+        "url": "https://github.com/sciensa/node-red-contrib-git-ui/issues"
+    },
+    "keywords": [
+        "node-red",
+        "git"
+    ],
+    "node-red": {
+        "version": ">=0.11.0",
+        "nodes": {
+            "git": "git/git.js"
+        }
+    },
+    "license": "MIT",
+    "author": "Sciensa Consulting <sciensa@sciensa.com> (http://github.com/sciensa)",
+    "contributors": [
+        "Aline Castro <aline.castro@sciensa.com> (http://github.com/alinecastro33)",
+        "Gabriel Carmelo Noguchi <gabriel.noguchi@sciensa.com> (http://github.com/gnoguchi)",
+        "Ian Nagano <ian.nagano@sciensa.com> (http://github.com/ianngn)",
+        "Rogério R. Alcântara <rogerio.alcantara@sciensa.com> (http://github.com/roalcantara)",
+        "Valter Junior <valter.junior@sciensa.com> (http://github.com/valterjnr)"
+    ],
+    "dependencies": {
+        "i18next-client": "1.10.3",
+        "simple-git": "1.73.0"
+    }
+}
