@@ -7,18 +7,20 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
   </head>
   <body class="git-section">
-    <form id="git-form">
+    <form id="git-form" style="padding: 10px">
       <div class="form-group">
-        <div class="alert alert-danger" style="margin-top: 20px" role="alert" hidden="true" id="resultNonSuccess">
-          <strong id="errorTitle"></strong>
-          <div id="errorMessage"></div>
+        <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
+          <strong class="title"></strong>
+          <div class="message"></div>
         </div>
-        <div class="alert alert-success" style="margin-top: 20px" role="alert" hidden="true" id="resultSuccess"></div>
+        <div class="alert alert-success" style="margin-top: 10px" role="alert" hidden="true">
+          <div class="message"></div>
+        </div>
       </div>
       <div class="form-group">
         <label for="coment">Message</label>
         <div class="controls">
-          <textarea name="comment" id="message" rows="8" cols="40" class="span5" placeholder="The commit message."></textarea>
+          <textarea class="form-control" name="comment" id="message" rows="8" cols="40" placeholder="The commit message."></textarea>
         </div>
       </div>
       <div class="form-row" align="right">
@@ -61,23 +63,34 @@
               $('#node-input').prop('disabled', false);
               setTimeout(() => {
                 $('.alert').fadeOut('fast');
-              }, 5000);
+              }, 10000);
             }
           });
         }
       }
 
       var Alert = {
+        clear: () => {
+          $('.alert .message').html('');
+          $('.alert .title').html('');
+        },
+        hide: () => {
+          $('.alert').hide();
+        },
+        clearAndHide: () => {
+          Alert.clear();
+          Alert.hide();
+        },
         error: (title, message) => {
-          $('#resultSuccess').hide();
-          $('#errorTitle').html(title);
-          $('#errorMessage').html(message);
-          $('#resultNonSuccess').show();          
+          Alert.clearAndHide();
+          $('.alert.alert-danger .title').html(title);
+          $('.alert.alert-danger .message').html(message);
+          $('.alert.alert-danger').slideDown('fast');      
         },
         success: (message) => {
-          $('#resultNonSuccess').hide();
-          $('#resultSuccess').show();
-          $('#resultSuccess').html(message);
+          Alert.clearAndHide();
+          $('.alert.alert-success .message').html(message);
+          $('.alert.alert-success').slideDown('fast');
         }
       }
     </script>
