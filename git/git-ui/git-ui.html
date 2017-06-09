@@ -10,10 +10,12 @@
     <form id="git-form" style="padding: 10px">
       <div class="form-group">
         <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
+          <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <strong class="title"></strong>
           <div class="message"></div>
         </div>
         <div class="alert alert-success" style="margin-top: 10px" role="alert" hidden="true">
+          <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <div class="message"></div>
         </div>
       </div>
@@ -40,6 +42,12 @@
           } else {
             GitUI.load('commit');
           }
+        });
+
+        $('.alert').on('click', '.close', (event) => {
+          $(event.target).closest('.alert').slideUp('fast', ()=> {
+            Alert.clearAndHide();
+          });
         });
       });
 
