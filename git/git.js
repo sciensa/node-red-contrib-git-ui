@@ -50,7 +50,7 @@ module.exports = (RED) => {
   });
 
   RED.httpAdmin.post('/git-ui/commit', (req, res) => {
-    commit(req.body.comment, (err) => {
+    commit(req.body.message, (err) => {
       if (err) {
         res.status(500).send(err);
       } else {

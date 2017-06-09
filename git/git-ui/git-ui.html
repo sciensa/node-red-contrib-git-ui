@@ -21,9 +21,10 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="coment">Message</label>
+        <label for="message">Message</label>
         <div class="controls">
-          <textarea class="form-control" name="comment" id="message" rows="8" cols="40" placeholder="The commit message."></textarea>
+          <textarea class="form-control" name="message" id="message" rows="8" cols="40" placeholder="A commit message" aria-describedby="helpBlock"></textarea>
+          <span id="helpBlock" class="help-block" style="display: none;">A commit message is required!</span>
         </div>
       </div>
       <div class="form-row" align="right">
@@ -37,10 +38,10 @@
       $(function() {
         $(document).on('click', '#node-input', (event) => {
           event.preventDefault();
-          var name = $('#message').val();
+          GitUI.clearErrors();
 
-          if (name === '') {
-            Alert.error('You must leave a comment before save!');
+          if ($('#message').val() === '') {
+            GitUI.messageRequired();
             return false;
           } else {
             GitUI.load('commit');
@@ -67,6 +68,7 @@
                                 .toggleClass('fa-refresh fa-spin');
             },
             success: (r) => {
+              $('#message').val('');
               Alert.success('Commit done!');
             },
             error: (jqXHR, textStatus, errorThrown) => {
@@ -81,6 +83,14 @@
               }, 10000);
             }
           });
+        },
+        clearErrors: () => {
+          $('#message').closest('.form-group')
+                       .removeClass('has-error').find('.help-block').hide();
+        },
+        messageRequired: () => {
+          $('#message').closest('.form-group')
+                       .addClass('has-error').find('.help-block').fadeIn('fast');          
         }
       }
 
