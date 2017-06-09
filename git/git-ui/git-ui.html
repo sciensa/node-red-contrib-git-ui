@@ -5,6 +5,7 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous"></link>    
   </head>
   <body class="git-section">
     <form id="git-form" style="padding: 10px">
@@ -26,7 +27,9 @@
         </div>
       </div>
       <div class="form-row" align="right">
-        <button type="submit" id="node-input" class="btn btn-default">Commit</button>
+        <button type="submit" id="node-input" class="btn btn-primary">
+          <i class="fa fa-check" aria-hidden="true"></i> Commit
+        </button>
       </div>
       <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
     </form>
@@ -60,6 +63,8 @@
             data: $('#git-form').serialize(),
             beforeSend: (r) => {
               $('#node-input').prop('disabled', true);
+              $('#node-input i').toggleClass('fa-check')
+                                .toggleClass('fa-refresh fa-spin');
             },
             success: (r) => {
               Alert.success('Commit done!');
@@ -69,6 +74,8 @@
             },
             complete: (r) => {
               $('#node-input').prop('disabled', false);
+              $('#node-input i').toggleClass('fa-refresh fa-spin')
+                                .toggleClass('fa-check');
               setTimeout(() => {
                 $('.alert').fadeOut('fast');
               }, 10000);
