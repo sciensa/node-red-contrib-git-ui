@@ -1,80 +1,82 @@
 <html>
-<head>
-  <title>Git UI</title>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
-</head>
-
-<body class="git-section">
-  <form id="git-form"> 
-    <div class="form-group">
+  <head>
+    <title>Git UI</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
+  </head>
+  <body class="git-section">
+    <form id="git-form">
+      <div class="form-group">
         <div class="alert alert-danger" style="margin-top: 20px" role="alert" hidden="true" id="resultNonSuccess">
-            <strong id="errorTitle"></strong>
-            <div id="errorMessage"></div>
+          <strong id="errorTitle"></strong>
+          <div id="errorMessage"></div>
         </div>
         <div class="alert alert-success" style="margin-top: 20px" role="alert" hidden="true" id="resultSuccess"></div>
-    </div>
-    <div class="form-group">
+      </div>
+      <div class="form-group">
         <label for="coment">Message</label>
         <div class="controls">
-           <textarea name="comment" id="message" rows="8" cols="40" class="span5" placeholder="The message you want to send to us."></textarea>
+          <textarea name="comment" id="message" rows="8" cols="40" class="span5" placeholder="The commit message."></textarea>
         </div>
-    </div>
-      <div class="form-row" align="right">
-          <button type="submit" id="node-input" class="btn btn-default">Commit</button>
       </div>
-    <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
-  </form>
-  <script type="text/javascript">
-    $(function() {
-        $(document).on('click', '#node-input',  (event) =>{
-            event.preventDefault();
-            var name = $('#message').val();
+      <div class="form-row" align="right">
+        <button type="submit" id="node-input" class="btn btn-default">Commit</button>
+      </div>
+      <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
+    </form>
+    <script type="text/javascript">
+      $(function() {
+        $(document).on('click', '#node-input', (event) => {
+          event.preventDefault();
+          var name = $('#message').val();
 
-            if (name  === '') {
-                showError("You must leave a comment before Save!");
-                return false;
-            }else{
-                loadContextData("commit");
-            } 
+          if (name === '') {
+            showError('You must leave a comment before save!');
+            return false;
+          } else {
+            loadContextData('commit');
+          }
         });
+
         function loadContextData(url, success) {
-            $.ajax({
-                url: url,
-                type: "POST",
-                dataType: "json",
-                data: $('#git-form').serialize(),
-                beforeSend: function (r) {
-                    $("#node-input").prop('disabled', true);
-                },
-                success: function (r) {
-                    showSuccess('Done!');
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    showError('Commit failed!',jqXHR.responseText)                    
-                },
-                complete: function(r) {
-                    $("#node-input").prop('disabled', false);
-                    setTimeout(function() {
-                        $('.alert').fadeOut('fast');
-                    }, 5000);
-                }
-            });
+          $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: $('#git-form').serialize(),
+            beforeSend: (r) => {
+              $('#node-input').prop('disabled', true);
+            },
+            success: (r) => {
+              showSuccess('Commit done!');
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              showError('Commit failed!', jqXHR.responseText)
+            },
+            complete: (r) => {
+              $('#node-input').prop('disabled', false);
+              setTimeout(() => {
+                $('.alert').fadeOut('fast');
+              }, 5000);
+            }
+          });
         }
-    });
-    function showError(title, message){
-        $('#resultNonSuccess').show();
-        $('#errorMessage').html(message);
+      });
+
+      function showError(title, message) {
         $('#resultSuccess').hide();
+        $('#resultNonSuccess').show();
         $('#errorTitle').html(title);
-    }
-    function showSuccess(message){
+        $('#errorMessage').html(message);
+      }
+
+      function showSuccess(message) {
         $('#resultSuccess').show();
         $('#resultSuccess').html(message);
         $('#resultNonSuccess').hide();
-    }    
-  </script>
-</body>
+      }
+    </script>
+  </body>
 </html>
