@@ -1,0 +1,8 @@
+extends: airbnb-base
+env:
+  node: true
+plugins:
+  - import
+rules:
+  semi: 2
+  import/no-extraneous-dependencies: [error, { devDependencies: true }]

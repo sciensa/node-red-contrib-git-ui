@@ -1,0 +1,123 @@
+<html>
+  <head>
+    <title>Git UI</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous"></link>    
+  </head>
+  <body class="git-section">
+    <form id="git-form" style="padding: 10px">
+      <div class="form-group">
+        <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
+          <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <strong class="title"></strong>
+          <div class="message"></div>
+        </div>
+        <div class="alert alert-success" style="margin-top: 10px" role="alert" hidden="true">
+          <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <div class="message"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <div class="controls">
+          <textarea class="form-control" name="message" id="message" rows="8" cols="40" placeholder="A commit message" aria-describedby="helpBlock"></textarea>
+          <span id="helpBlock" class="help-block" style="display: none;">A commit message is required!</span>
+        </div>
+      </div>
+      <div class="form-row" align="right">
+        <button type="submit" id="node-input" class="btn btn-primary">
+          <i class="fa fa-check" aria-hidden="true"></i> Commit
+        </button>
+      </div>
+      <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
+    </form>
+    <script type="text/javascript">
+      $(function() {
+        $(document).on('click', '#node-input', (event) => {
+          event.preventDefault();
+          GitUI.clearErrors();
+
+          if ($('#message').val() === '') {
+            GitUI.messageRequired();
+            return false;
+          } else {
+            GitUI.load('commit');
+          }
+        });
+
+        $('.alert').on('click', '.close', (event) => {
+          $(event.target).closest('.alert').slideUp('fast', ()=> {
+            Alert.clearAndHide();
+          });
+        });
+      });
+
+      var GitUI = {
+        load: (url) => {
+          $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: $('#git-form').serialize(),
+            beforeSend: (r) => {
+              $('#node-input').prop('disabled', true);
+              $('#node-input i').toggleClass('fa-check')
+                                .toggleClass('fa-refresh fa-spin');
+            },
+            success: (r) => {
+              $('#message').val('');
+              Alert.success('Commit done!');
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              Alert.error('Commit failed!', jqXHR.responseText)
+            },
+            complete: (r) => {
+              $('#node-input').prop('disabled', false);
+              $('#node-input i').toggleClass('fa-refresh fa-spin')
+                                .toggleClass('fa-check');
+              setTimeout(() => {
+                $('.alert').fadeOut('fast');
+              }, 10000);
+            }
+          });
+        },
+        clearErrors: () => {
+          $('#message').closest('.form-group')
+                       .removeClass('has-error').find('.help-block').hide();
+        },
+        messageRequired: () => {
+          $('#message').closest('.form-group')
+                       .addClass('has-error').find('.help-block').fadeIn('fast');          
+        }
+      }
+
+      var Alert = {
+        clear: () => {
+          $('.alert .message').html('');
+          $('.alert .title').html('');
+        },
+        hide: () => {
+          $('.alert').hide();
+        },
+        clearAndHide: () => {
+          Alert.clear();
+          Alert.hide();
+        },
+        error: (title, message) => {
+          Alert.clearAndHide();
+          $('.alert.alert-danger .title').html(title);
+          $('.alert.alert-danger .message').html(message);
+          $('.alert.alert-danger').slideDown('fast');      
+        },
+        success: (message) => {
+          Alert.clearAndHide();
+          $('.alert.alert-success .message').html(message);
+          $('.alert.alert-success').slideDown('fast');
+        }
+      }
+    </script>
+  </body>
+</html>
