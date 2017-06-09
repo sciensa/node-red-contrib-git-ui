@@ -33,14 +33,16 @@
           var name = $('#message').val();
 
           if (name === '') {
-            showError('You must leave a comment before save!');
+            Alert.error('You must leave a comment before save!');
             return false;
           } else {
-            loadContextData('commit');
+            GitUI.load('commit');
           }
         });
+      });
 
-        function loadContextData(url, success) {
+      var GitUI = {
+        load: (url) => {
           $.ajax({
             url: url,
             type: 'POST',
@@ -50,10 +52,10 @@
               $('#node-input').prop('disabled', true);
             },
             success: (r) => {
-              showSuccess('Commit done!');
+              Alert.success('Commit done!');
             },
             error: (jqXHR, textStatus, errorThrown) => {
-              showError('Commit failed!', jqXHR.responseText)
+              Alert.error('Commit failed!', jqXHR.responseText)
             },
             complete: (r) => {
               $('#node-input').prop('disabled', false);
@@ -63,19 +65,20 @@
             }
           });
         }
-      });
-
-      function showError(title, message) {
-        $('#resultSuccess').hide();
-        $('#resultNonSuccess').show();
-        $('#errorTitle').html(title);
-        $('#errorMessage').html(message);
       }
 
-      function showSuccess(message) {
-        $('#resultSuccess').show();
-        $('#resultSuccess').html(message);
-        $('#resultNonSuccess').hide();
+      var Alert = {
+        error: (title, message) => {
+          $('#resultSuccess').hide();
+          $('#errorTitle').html(title);
+          $('#errorMessage').html(message);
+          $('#resultNonSuccess').show();          
+        },
+        success: (message) => {
+          $('#resultNonSuccess').hide();
+          $('#resultSuccess').show();
+          $('#resultSuccess').html(message);
+        }
       }
     </script>
   </body>
