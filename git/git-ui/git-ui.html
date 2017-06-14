@@ -6,28 +6,37 @@
     <link rel="stylesheet" href="/vendor/font-awesome/css/font-awesome.min.css">
   </head>
   <body class="git-section">
-    <form id="git-form" autocomplete="" style="padding: 10px;">
-      <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
-        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <strong class="title"></strong>
-        <div class="message"></div>
-      </div>
-      <div class="alert alert-success" style="margin-top: 10px" role="alert" hidden="true">
-        <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <div class="message"></div>
-      </div>
-      <div class="control-group">
-        <label for="message">Message</label>
-        <div class="controls">
-          <textarea class="form-control" name="message" id="message" rows="8" cols="40" placeholder="A commit message" aria-describedby="helpBlock"></textarea>
-          <span class="help-block" style="display: none; color: red">Message is required!</span>
+    <div class="tabbable" style="padding-top: 10px;">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#commitTab" data-toggle="tab">Commit</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="commitTab">
+          <form id="git-form" autocomplete="" style="padding: 10px;">
+            <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
+              <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <strong class="title"></strong>
+              <div class="message"></div>
+            </div>
+            <div class="alert alert-success" style="margin-top: 10px" role="alert" hidden="true">
+              <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <div class="message"></div>
+            </div>
+            <div class="control-group">
+              <label for="message">Message</label>
+              <div class="controls">
+                <textarea class="form-control" name="message" id="message" rows="8" cols="40" placeholder="A commit message" aria-describedby="helpBlock"></textarea>
+                <span class="help-block" style="display: none; color: red">Message is required!</span>
+              </div>
+            </div>
+            <button type="submit" id="node-input" class="btn btn-primary" style="margin-top: 10px;">
+              <i class="fa fa-check" aria-hidden="true"></i> Commit
+            </button>
+            <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
+          </form>
         </div>
       </div>
-      <button type="submit" id="node-input" class="btn btn-primary" style="margin-top: 10px;">
-        <i class="fa fa-check" aria-hidden="true"></i> Commit
-      </button>
-      <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
-    </form>
+    </div>
     <script type="text/javascript">
       $(function() {
         $(document).on('click', '#node-input', (event) => {
