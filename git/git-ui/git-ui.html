@@ -2,16 +2,17 @@
   <head>
     <title>Git UI</title>
     <script src="/vendor/vendor.js"></script>
-    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/vendor/font-awesome/css/font-awesome.min.css">
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   </head>
-  <body class="git-section">
+  <body class="git-ui">
     <div class="tabbable" style="padding-top: 10px;">
       <ul class="nav nav-tabs">
         <li class="active"><a href="#commitTab" data-toggle="tab">Commit</a></li>
       </ul>
       <div class="tab-content">
-        <div class="tab-pane active" id="commitTab">
+        <div class="tab-pane commit active" id="commitTab">
           <form id="git-form" autocomplete="" style="padding: 10px;">
             <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
               <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -26,10 +27,10 @@
               <label for="message">Message</label>
               <div class="controls">
                 <textarea class="form-control" name="message" id="message" rows="8" cols="40" placeholder="A commit message" aria-describedby="helpBlock"></textarea>
-                <span class="help-block" style="display: none; color: red">Message is required!</span>
+                <span id="helpBlock" class="help-block" style="display: none;">Message is required!</span>
               </div>
             </div>
-            <button type="submit" id="node-input" class="btn btn-primary" style="margin-top: 10px;">
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
               <i class="fa fa-check" aria-hidden="true"></i> Commit
             </button>
             <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
@@ -39,11 +40,11 @@
     </div>
     <script type="text/javascript">
       $(function() {
-        $(document).on('click', '#node-input', (event) => {
+        $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
           event.preventDefault();
           GitUI.clearErrors();
 
-          if ($('#message').val() === '') {
+          if ($('.git-ui .tab-pane.commit textarea').val() === '') {
             GitUI.messageRequired();
             return false;
           } else {
@@ -51,7 +52,7 @@
           }
         });
 
-        $('.alert').on('click', '.close', (event) => {
+        $('.git-ui .alert').on('click', '.close', (event) => {
           $(event.target).closest('.alert').slideUp('fast', ()=> {
             Alert.clearAndHide();
           });
@@ -64,46 +65,44 @@
             url: url,
             type: 'POST',
             dataType: 'json',
-            data: $('#git-form').serialize(),
+            data: $('.git-ui .tab-pane.commit form').serialize(),
             beforeSend: (r) => {
-              $('#node-input').prop('disabled', true);
-              $('#node-input i').toggleClass('fa-check')
-                                .toggleClass('fa-refresh fa-spin');
+              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
+              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin');
             },
             success: (r) => {
-              $('#message').val('');
+              $('.git-ui .tab-pane.commit textarea').val('');
               Alert.success('Commit done!');
             },
             error: (jqXHR, textStatus, errorThrown) => {
               Alert.error('Commit failed!', jqXHR.responseText)
             },
             complete: (r) => {
-              $('#node-input').prop('disabled', false);
-              $('#node-input i').toggleClass('fa-refresh fa-spin')
-                                .toggleClass('fa-check');
+              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false);
+              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check');
               setTimeout(() => {
-                $('.alert').fadeOut('fast');
+                $('.git-ui .alert').fadeOut('fast');
               }, 10000);
             }
           });
         },
         clearErrors: () => {
-          $('#message').closest('.control-group')
-                       .removeClass('error').find('.help-block').hide();
+          $('.git-ui .tab-pane.commit textarea').closest('.control-group')
+            .removeClass('has-error').find('.help-block').hide();
         },
         messageRequired: () => {
-          $('#message').closest('.control-group')
-                       .addClass('error').find('.help-block').fadeIn('fast');          
+          $('.git-ui .tab-pane.commit textarea').closest('.control-group')
+            .addClass('has-error').find('.help-block').fadeIn('fast');          
         }
       }
 
       var Alert = {
         clear: () => {
-          $('.alert .message').html('');
-          $('.alert .title').html('');
+          $('.git-ui .alert .message').html('');
+          $('.git-ui .alert .title').html('');
         },
         hide: () => {
-          $('.alert').hide();
+          $('.git-ui .alert').hide();
         },
         clearAndHide: () => {
           Alert.clear();
@@ -111,14 +110,14 @@
         },
         error: (title, message) => {
           Alert.clearAndHide();
-          $('.alert.alert-danger .title').html(title);
-          $('.alert.alert-danger .message').html(message);
-          $('.alert.alert-danger').slideDown('fast');      
+          $('.git-ui .alert.alert-danger .title').html(title);
+          $('.git-ui .alert.alert-danger .message').html(message);
+          $('.git-ui .alert.alert-danger').slideDown('fast');      
         },
         success: (message) => {
           Alert.clearAndHide();
-          $('.alert.alert-success .message').html(message);
-          $('.alert.alert-success').slideDown('fast');
+          $('.git-ui .alert.alert-success .message').html(message);
+          $('.git-ui .alert.alert-success').slideDown('fast');
         }
       }
     </script>
