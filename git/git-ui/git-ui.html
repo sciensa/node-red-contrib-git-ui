@@ -48,7 +48,7 @@
             GitUI.messageRequired();
             return false;
           } else {
-            GitUI.load('commit');
+            GitUI.commit();
           }
         });
 
@@ -60,9 +60,9 @@
       });
 
       var GitUI = {
-        load: (url) => {
+        commit: () => {
           $.ajax({
-            url: url,
+            url: 'commit',
             type: 'POST',
             dataType: 'json',
             data: $('.git-ui .tab-pane.commit form').serialize(),

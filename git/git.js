@@ -23,12 +23,10 @@ module.exports = (RED) => {
   });
 
   RED.httpAdmin.post('/git-ui/commit', (req, res) => {
-    gitUi.commit(req.body.message, (err) => {
-      if (err) {
-        res.status(500).send(err);
-      } else {
-        res.status(200).send({ status: 'OK' });
-      }
+    gitUi.commit(req.body.message).then((result) => {
+      res.status(200).send({ status: 'OK', result });
+    }).catch((err) => {
+      res.status(500).send(err);
     });
   });
 };

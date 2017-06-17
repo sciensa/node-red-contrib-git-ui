@@ -6,32 +6,32 @@ const remote = 'origin';
 const branch = 'staging';
 
 module.exports = {
-  commit: (message, callback) => {
-      // deletes package.json
+  commit: message => new Promise((resolve, reject) => {
+    // deletes package.json
     fs.unlink('./package.json', (err) => {
       if (err) {
-        callback(err, null);
+        reject(err);
       } else {
         // generates a new package.json based on node_modules
         exec('npm init -y', (er, stdout, stderr) => {
           if (er) {
-            callback(er, null);
+            reject(er);
           } else if (stderr) {
-            callback(stderr, null);
+            reject(stderr);
           } else {
-              // commits and pushes all changes to the remote branch
+            // commits and pushes all changes to the remote branch
             git().add('--all').commit(message).push(remote, branch, (e, data) => {
               if (e) {
-                callback(e, data);
+                reject(stderr);
               } else {
-                callback(null, data);
+                resolve(data);
               }
             });
           }
         });
       }
     });
-  },
+  }),
 
   sendFile: (res, filename) => {
     // Use the right function depending on Express 3.x/4.x
