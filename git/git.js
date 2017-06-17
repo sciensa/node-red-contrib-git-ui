@@ -17,6 +17,11 @@ module.exports = (RED) => {
     gitUi.sendFile(res, filename);
   });
 
+  RED.httpAdmin.get('/git-ui/node_modules/moment/min/moment.min.js', (req, res) => {
+    const filename = path.join(__dirname, '../node_modules/moment/min/', 'moment.min.js');
+    gitUi.sendFile(res, filename);
+  });
+
   RED.httpAdmin.get('/git-ui/git-ui.html', (req, res) => {
     const filename = path.join(__dirname, 'git-ui', 'git-ui.html');
     gitUi.sendFile(res, filename);
@@ -27,6 +32,35 @@ module.exports = (RED) => {
       res.status(200).send({ status: 'OK', result });
     }).catch((err) => {
       res.status(500).send(err);
+    });
+  });
+
+  RED.httpAdmin.get('/git-ui/git-ui.css', (req, res) => {
+    const filename = path.join(__dirname, 'git-ui', 'git-ui.css');
+    gitUi.sendFile(res, filename);
+  });
+
+  RED.httpAdmin.get('/git-ui/logs', (req, res) => {
+    gitUi.logs().then((logList) => {
+      res.status(200).send({ commits: logList.all });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
+    });
+  });
+
+  RED.httpAdmin.get('/git-ui/branches', (req, res) => {
+    gitUi.branches().then((branchList) => {
+      res.status(200).send({ branches: branchList.all, current: branchList.current });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
+    });
+  });
+
+  RED.httpAdmin.put('/git-ui/checkout/:branchName', (req, res) => {
+    gitUi.checkout(req.params.branchName).then(() => {
+      res.status(200).send({ status: 'OK' });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
     });
   });
 };

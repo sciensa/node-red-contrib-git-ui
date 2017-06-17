@@ -2,14 +2,29 @@
   <head>
     <title>Git UI</title>
     <script src="/vendor/vendor.js"></script>
+    <link rel="stylesheet" href="git-ui.css">
     <link rel="stylesheet" href="/vendor/font-awesome/css/font-awesome.min.css">
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="node_modules/moment/min/moment.min.js"></script>
   </head>
   <body class="git-ui">
+    <div class="btn-group btn-block" style="padding-top: 10px;">
+      <button type="button" class="btn btn-lg btn-primary btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <i class="fa fa-code-fork pull-left" aria-hidden="true"></i>
+        <span class="branch"></span>
+      </button>
+      <ul class="dropdown-menu branches btn-block"></ul>
+    </div>
     <div class="tabbable" style="padding-top: 10px;">
       <ul class="nav nav-tabs">
-        <li class="active"><a href="#commitTab" data-toggle="tab">Commit</a></li>
+        <li class="commit active"><a href="#commitTab" data-toggle="tab">Commit</a></li>
+        <li class="logs">
+          <a href="#logsTab" data-toggle="tab">
+            <i class="fa fa-refresh fa-spin" aria-hidden="true" style="display: none;"></i>
+            Log
+          </a>
+        </li>        
       </ul>
       <div class="tab-content">
         <div class="alert alert-danger" style="margin-top: 20px" role="alert" hidden="true">
@@ -36,10 +51,16 @@
             <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
           </form>
         </div>
+        <div class="tab-pane logs" id="logsTab">
+          <br />
+          <div class="commits list-group"></div>
+        </div>
       </div>
     </div>
     <script type="text/javascript">
       $(function() {
+        GitUI.branches();
+
         $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
           event.preventDefault();
           GitUI.clearErrors();
@@ -55,6 +76,21 @@
         $('.git-ui .alert').on('click', '.close', (event) => {
           $(event.target).closest('.alert').slideUp('fast', ()=> {
             Alert.clearAndHide();
+          });
+        });
+
+        $('.git-ui .nav .logs').on('click', 'a', (event) => {
+          GitUI.logs();
+        });
+
+        $('.git-ui .branches').on('click', 'a', (event) => {
+          event.preventDefault();
+          const branchName = $(event.target).text();
+          GitUI.checkout(branchName).then(() => {
+            $('.git-ui .btn-group .branch').empty().html(branchName);
+            GitUI.logs();
+          }).catch((err) => {
+            Alert.error(`Error Checking Out '${branchName}'`, err)
           });
         });
       });
@@ -93,7 +129,64 @@
         messageRequired: () => {
           $('.git-ui .tab-pane.commit textarea').closest('.control-group')
             .addClass('has-error').find('.help-block').fadeIn('fast');          
-        }
+        },
+        branches: () => {
+          $.ajax({
+            url: 'branches',
+            type: 'GET',
+            dataType: 'json',
+            success: (result) => {
+              var branches = $.map(result.branches, (branch, i) => {
+                return $('<li>').append($('<a>', {href: '#', text: branch, class: 'btn-block'}));
+              });
+              $('.git-ui .btn-group .branches').empty().append(branches);
+              $('.git-ui .btn-group .dropdown-toggle .branch').empty().html(result.current);
+              $('.git-ui .btn-group .dropdown-toggle').dropdown();
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              Alert.error('Error Loading Branches!', jqXHR.responseText)
+            }
+          });
+        },
+        logs: () => {
+          $.ajax({
+            url: 'logs',
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: (r) => {
+              $('.git-ui .nav .logs i').show();
+            },
+            success: (result) => {
+              var commits = $.map(result.commits, (commit, i) => {
+                return $('<a>', {
+                  href: 'JavaScript: void(0);',
+                  class: 'list-group-item',
+                  text: commit.message
+                }).append($('<small>', { text: `${moment(commit.date, "YYYYMMDD").fromNow()} • ${commit.author_name}` }));
+              });
+              $('.tab-pane.logs .commits').empty().append(commits);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              Alert.error('Error Loading Log!', jqXHR.responseText)
+            },
+            complete: (r) => {
+              $('.git-ui .nav .logs i').fadeOut('fast');
+            }
+          });
+        },
+        checkout: branchName => new Promise((resolve, reject) => {
+          $.ajax({
+            url: `checkout/${branchName}`,
+            type: 'PUT',
+            dataType: 'json',
+            success: (result) => {
+              resolve(result);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error);
+            }
+          });
+        })
       }
 
       var Alert = {

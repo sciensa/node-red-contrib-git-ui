@@ -41,4 +41,44 @@ module.exports = {
       res.sendfile(filename);
     }
   },
+
+  tags: () => new Promise((resolve, reject) => {
+    git().tags({}, (err, tags) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(tags);
+      }
+    });
+  }),
+
+  logs: () => new Promise((resolve, reject) => {
+    git().log({}, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  }),
+
+  branches: () => new Promise((resolve, reject) => {
+    git().branch(['-vv'], (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  }),
+
+  checkout: branchName => new Promise((resolve, reject) => {
+    git().checkout(branchName, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  }),
 };

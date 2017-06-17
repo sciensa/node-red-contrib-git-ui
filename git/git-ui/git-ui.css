@@ -1,0 +1,23 @@
+.git-ui .tabbable .alert.alert-danger {
+  margin-bottom: 10px !important;
+}
+
+.git-ui .btn-group button.btn.dropdown-toggle {
+  text-align: right;
+}
+
+.git-ui .btn-group button.btn.dropdown-toggle i {
+  font-size: 25px;
+}
+
+.git-ui .btn-group .dropdown-menu {
+  margin-top: 1px;
+}
+
+.git-ui .tabbable .tab-pane.logs .commits a {
+  font-size: 13px;
+}
+
+.git-ui .tabbable .tab-pane.logs .commits a small {
+  display: block; font-size: 10px; color: grey;
+}
