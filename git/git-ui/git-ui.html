@@ -12,17 +12,17 @@
         <li class="active"><a href="#commitTab" data-toggle="tab">Commit</a></li>
       </ul>
       <div class="tab-content">
+        <div class="alert alert-danger" style="margin-top: 20px" role="alert" hidden="true">
+          <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <strong class="title"></strong>
+          <div class="message"></div>
+        </div>
+        <div class="alert alert-success" style="margin-top: 20px" role="alert" hidden="true">
+          <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <div class="message"></div>
+        </div>
         <div class="tab-pane commit active" id="commitTab">
           <form id="git-form" autocomplete="" style="padding: 10px;">
-            <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
-              <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <strong class="title"></strong>
-              <div class="message"></div>
-            </div>
-            <div class="alert alert-success" style="margin-top: 10px" role="alert" hidden="true">
-              <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <div class="message"></div>
-            </div>
             <div class="control-group">
               <label for="message">Message</label>
               <div class="controls">
