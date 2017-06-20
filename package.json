@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-git-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "repository": {
     "type": "git",
@@ -24,8 +24,10 @@
   "author": "Sciensa Consulting <sciensa@sciensa.com> (http://github.com/sciensa)",
   "contributors": [
     "Aline Castro <aline.castro@sciensa.com> (http://github.com/alinecastro33)",
+    "Daniele Ferrari <daniele.ferrari@sciensa.com> (http://github.com/eleinadinha)",
     "Gabriel Carmelo Noguchi <gabriel.noguchi@sciensa.com> (http://github.com/gnoguchi)",
     "Ian Nagano <ian.nagano@sciensa.com> (http://github.com/ianngn)",
+    "Lucas Machado <lucas.machado@sciensa.com> (http://github.com/machad0)",
     "Rogério R. Alcântara <rogerio.alcantara@sciensa.com> (http://github.com/roalcantara)",
     "Valter Junior <valter.junior@sciensa.com> (http://github.com/valterjnr)"
   ],
@@ -35,7 +37,10 @@
     "eslint-plugin-import": "^2.3.0"
   },
   "dependencies": {
+    "bootstrap": "^3.3.7",
+    "clipboard": "^1.7.1",
     "i18next-client": "1.10.3",
+    "moment": "^2.18.1",
     "simple-git": "1.73.0"
   }
 }

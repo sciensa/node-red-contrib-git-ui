@@ -1,106 +1,279 @@
 <html>
   <head>
     <title>Git UI</title>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous"></link>    
+    <script src="/vendor/vendor.js"></script>
+    <link rel="stylesheet" href="git-ui.css">
+    <link rel="stylesheet" href="/vendor/font-awesome/css/font-awesome.min.css">
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="node_modules/moment/min/moment.min.js"></script>
+    <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   </head>
-  <body class="git-section">
-    <form id="git-form" style="padding: 10px">
-      <div class="form-group">
-        <div class="alert alert-danger" style="margin-top: 10px" role="alert" hidden="true">
+  <body class="git-ui">
+    <div class="tabbable" style="padding-top: 10px;">
+      <ul class="nav nav-tabs">
+        <li class="commit active"><a href="#commitTab" data-toggle="tab">Commit</a></li>
+        <li class="logs">
+          <a href="#logsTab" data-toggle="tab">
+            <i class="fa fa-refresh fa-spin" aria-hidden="true" style="display: none;"></i>
+            Log
+          </a>
+        </li>        
+      </ul>
+      <div class="tab-content">
+        <div class="alert alert-danger" style="margin-top: 20px" role="alert" hidden="true">
           <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <strong class="title"></strong>
           <div class="message"></div>
         </div>
-        <div class="alert alert-success" style="margin-top: 10px" role="alert" hidden="true">
+        <div class="alert alert-success" style="margin-top: 20px" role="alert" hidden="true">
           <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <div class="message"></div>
         </div>
-      </div>
-      <div class="form-group">
-        <label for="message">Message</label>
-        <div class="controls">
-          <textarea class="form-control" name="message" id="message" rows="8" cols="40" placeholder="A commit message" aria-describedby="helpBlock"></textarea>
-          <span id="helpBlock" class="help-block" style="display: none;">A commit message is required!</span>
+        <div class="tab-pane commit active" id="commitTab">
+          <form id="git-form" autocomplete="" style="padding: 10px;">
+            <div class="control-group">
+              <label for="message">Message</label>
+              <div class="controls">
+                <textarea class="form-control" name="message" id="message" rows="8" cols="40" placeholder="A commit message" aria-describedby="helpBlock"></textarea>
+                <span id="helpBlock" class="help-block" style="display: none;">Message is required!</span>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+              <i class="fa fa-check" aria-hidden="true"></i> Commit
+            </button>
+            <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
+          </form>
+        </div>
+        <div class="tab-pane logs" id="logsTab">
+          <div class="btn-group btn-block" style="padding-top: 10px; padding-bottom: 10px;">
+            <button type="button" class="btn btn-lg btn-primary btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              <i class="fa fa-code-fork pull-left" aria-hidden="true"></i>
+              <span class="branch"></span>
+            </button>
+            <ul class="dropdown-menu branches btn-block"></ul>
+          </div>
+          <div class="commits list-group"></div>
+          <div class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                  <pre id="code"></pre>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-info" data-clipboard-target="#code">
+                    <i class="fa fa-files-o" aria-hidden="true"></i>
+                    Copy
+                  </button>
+                  <button type="button" class="btn btn-danger" data-dismiss="modal">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="form-row" align="right">
-        <button type="submit" id="node-input" class="btn btn-primary">
-          <i class="fa fa-check" aria-hidden="true"></i> Commit
-        </button>
-      </div>
-      <div id="git-ui-container" class="git-ui-wrap" style="margin: 10px"></div>
-    </form>
+    </div>
     <script type="text/javascript">
       $(function() {
-        $(document).on('click', '#node-input', (event) => {
+        GitUI.checkout('staging');
+        GitUI.branches();
+
+        $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
           event.preventDefault();
           GitUI.clearErrors();
 
-          if ($('#message').val() === '') {
-            GitUI.messageRequired();
-            return false;
-          } else {
-            GitUI.load('commit');
-          }
+          GitUI.status().then((statusSummary) => {
+            if(statusSummary.modified.length > 0) {
+              if ($('.git-ui .tab-pane.commit textarea').val() === '') {
+                GitUI.messageRequired();
+                return false;
+              } else {
+                GitUI.commit();
+              }  
+            } else {
+              Alert.error(`Error`, 'Nothing to commit!');
+            }
+          }).catch((err) => {
+            Alert.error(`Error Showing '${hash}'`, err);
+          });
         });
 
-        $('.alert').on('click', '.close', (event) => {
+        $('.git-ui .alert').on('click', '.close', (event) => {
           $(event.target).closest('.alert').slideUp('fast', ()=> {
             Alert.clearAndHide();
+          });
+        });
+
+        $('.git-ui .nav .logs').on('click', 'a', (event) => {
+          const branchName = $('.git-ui .btn-group button .branch').html();
+          GitUI.logs(branchName);
+        });
+
+        $('.git-ui .btn-group .branches').on('click', 'a', (event) => {
+          event.preventDefault();
+          const branchName = $(event.target).text();
+          GitUI.logs(branchName);
+          $('.git-ui .btn-group .branch').empty().html(branchName);
+        });
+
+        $('.git-ui .tab-pane.logs .list-group.commits').on('click', 'a', (event) => {
+          event.preventDefault();
+          const a = $(event.target).closest('a')
+          var hash = a.attr('href');
+          GitUI.show(hash).then((result) => {
+            $('.git-ui .tab-pane.logs .modal .modal-body pre').html(result.object);
+            $('.git-ui .tab-pane.logs .modal .modal-title').html(a.html());
+            $('.git-ui .tab-pane.logs .modal').modal('show');
+            new Clipboard('.btn.btn-info');
+          }).catch((err) => {
+            Alert.error(`Error Showing '${hash}'`, err);
           });
         });
       });
 
       var GitUI = {
-        load: (url) => {
+        commit: () => {
           $.ajax({
-            url: url,
+            url: 'commit',
             type: 'POST',
             dataType: 'json',
-            data: $('#git-form').serialize(),
+            data: $('.git-ui .tab-pane.commit form').serialize(),
             beforeSend: (r) => {
-              $('#node-input').prop('disabled', true);
-              $('#node-input i').toggleClass('fa-check')
-                                .toggleClass('fa-refresh fa-spin');
+              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
+              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin');
             },
             success: (r) => {
-              $('#message').val('');
+              $('.git-ui .tab-pane.commit textarea').val('');
               Alert.success('Commit done!');
             },
             error: (jqXHR, textStatus, errorThrown) => {
               Alert.error('Commit failed!', jqXHR.responseText)
             },
             complete: (r) => {
-              $('#node-input').prop('disabled', false);
-              $('#node-input i').toggleClass('fa-refresh fa-spin')
-                                .toggleClass('fa-check');
+              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false);
+              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check');
               setTimeout(() => {
-                $('.alert').fadeOut('fast');
+                $('.git-ui .alert').fadeOut('fast');
               }, 10000);
             }
           });
         },
         clearErrors: () => {
-          $('#message').closest('.form-group')
-                       .removeClass('has-error').find('.help-block').hide();
+          $('.git-ui .tab-pane.commit textarea').closest('.control-group')
+            .removeClass('has-error').find('.help-block').hide();
         },
         messageRequired: () => {
-          $('#message').closest('.form-group')
-                       .addClass('has-error').find('.help-block').fadeIn('fast');          
+          $('.git-ui .tab-pane.commit textarea').closest('.control-group')
+            .addClass('has-error').find('.help-block').fadeIn('fast');          
+        },
+        branches: () => {
+          $.ajax({
+            url: 'branches',
+            type: 'GET',
+            dataType: 'json',
+            success: (result) => {
+              var branches = $.map(result.branches, (branch, i) => {
+                return $('<li>').append($('<a>', {href: '#', text: branch, class: 'btn-block'}));
+              });
+              $('.git-ui .btn-group .branches').empty().append(branches);
+              $('.git-ui .btn-group .dropdown-toggle .branch').empty().html(result.current);
+              $('.git-ui .btn-group .dropdown-toggle').dropdown();
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              Alert.error('Error Loading Branches!', jqXHR.responseText)
+            }
+          });
+        },
+        logs: branchName => {
+          $.ajax({
+            url: `logs/${branchName}`,
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: (r) => {
+              $('.git-ui .nav .logs i').show();
+            },
+            success: (result) => {
+              var commits = $.map(result.commits, (commit, i) => {
+                return $('<a>', {
+                  href: `show/${commit.hash}/flows.json`,
+                  class: 'list-group-item',
+                  text: commit.message
+                }).append($('<small>', { text: `${moment(commit.date, "YYYYMMDD").fromNow()} • ${commit.author_name}` }));
+              });
+              $('.tab-pane.logs .commits').empty().append(commits);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              Alert.error('Error Loading Log!', jqXHR.responseText)
+            },
+            complete: (r) => {
+              $('.git-ui .nav .logs i').fadeOut('fast');
+            }
+          });
+        },
+        checkout: branchName => new Promise((resolve, reject) => {
+          $.ajax({
+            url: `checkout/${branchName}`,
+            type: 'PUT',
+            dataType: 'json',
+            success: (result) => {
+              resolve(result);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error);
+            }
+          });
+        }),
+        show: (hash) => new Promise((resolve, reject) => {
+          $.ajax({
+            url: hash,
+            type: 'GET',
+            dataType: 'json',
+            success: (result) => {
+              resolve(result);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error);
+            }
+          });
+        }),
+        status: () => new Promise((resolve, reject) => {
+          $.ajax({
+            url: 'status',
+            type: 'GET',
+            dataType: 'json',
+            success: (result) => {
+              resolve(result.statusSummary);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error);
+            }
+          });
+        }),
+        toggleEnableCommit: (enabled) => {
+          if(enabled) {
+            $('.git-ui .tab-pane.commit textarea').prop('disabled', '');
+            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false);
+          } else {
+            $('.git-ui .tab-pane.commit textarea').prop('disabled', 'disabled');
+            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
+          }
         }
       }
 
       var Alert = {
         clear: () => {
-          $('.alert .message').html('');
-          $('.alert .title').html('');
+          $('.git-ui .alert .message').html('');
+          $('.git-ui .alert .title').html('');
         },
         hide: () => {
-          $('.alert').hide();
+          $('.git-ui .alert').hide();
         },
         clearAndHide: () => {
           Alert.clear();
@@ -108,14 +281,14 @@
         },
         error: (title, message) => {
           Alert.clearAndHide();
-          $('.alert.alert-danger .title').html(title);
-          $('.alert.alert-danger .message').html(message);
-          $('.alert.alert-danger').slideDown('fast');      
+          $('.git-ui .alert.alert-danger .title').html(title);
+          $('.git-ui .alert.alert-danger .message').html(message);
+          $('.git-ui .alert.alert-danger').slideDown('fast');      
         },
         success: (message) => {
           Alert.clearAndHide();
-          $('.alert.alert-success .message').html(message);
-          $('.alert.alert-success').slideDown('fast');
+          $('.git-ui .alert.alert-success .message').html(message);
+          $('.git-ui .alert.alert-success').slideDown('fast');
         }
       }
     </script>
