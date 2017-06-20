@@ -1,4 +1,4 @@
-const git = require('simple-git');
+const git = require('simple-git')();
 const fs = require('fs');
 const exec = require('child_process').exec;
 
@@ -43,7 +43,7 @@ module.exports = {
   },
 
   tags: () => new Promise((resolve, reject) => {
-    git().tags({}, (err, tags) => {
+    git.tags({}, (err, tags) => {
       if (err) {
         reject(err);
       } else {
@@ -53,7 +53,7 @@ module.exports = {
   }),
 
   logs: branchName => new Promise((resolve, reject) => {
-    git().log([branchName], (err, result) => {
+    git.log([branchName], (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -63,7 +63,7 @@ module.exports = {
   }),
 
   branches: () => new Promise((resolve, reject) => {
-    git().branch(['-vv'], (err, result) => {
+    git.branch(['-vv'], (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -73,7 +73,7 @@ module.exports = {
   }),
 
   checkout: branchName => new Promise((resolve, reject) => {
-    git().checkout(branchName, (err, result) => {
+    git.checkout(branchName, (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -83,7 +83,7 @@ module.exports = {
   }),
 
   show: (hash, fileName) => new Promise((resolve, reject) => {
-    git().show([`${hash}:${fileName}`], (err, result) => {
+    git.show([`${hash}:${fileName}`], (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -93,12 +93,21 @@ module.exports = {
   }),
 
   status: () => new Promise((resolve, reject) => {
-    git().status((err, result) => {
+    git.status((err, result) => {
       if (err) {
         reject(err);
       } else {
         resolve(result);
       }
     });
+  }),
+
+  cwd: dir => new Promise((resolve, reject) => {
+    try {
+      git.cwd(dir);
+      resolve(dir);
+    } catch (e) {
+      reject(e);
+    }
   }),
 };
