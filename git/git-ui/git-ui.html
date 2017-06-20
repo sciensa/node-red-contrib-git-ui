@@ -83,8 +83,12 @@
     </div>
     <script type="text/javascript">
       $(function() {
-        GitUI.checkout('staging');
-        GitUI.branches();
+        GitUI.checkout('staging').then(() => {
+          GitUI.branches();  
+        }).catch((err) => {
+          Alert.error('Error Checking out Staging!', err);
+          GitUI.disable();
+        });
 
         $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
           event.preventDefault();
@@ -113,8 +117,10 @@
         });
 
         $('.git-ui .nav .logs').on('click', 'a', (event) => {
-          const branchName = $('.git-ui .btn-group button .branch').html();
-          GitUI.logs(branchName);
+          if(!$(event.target).hasClass('disabled')) {
+            const branchName = $('.git-ui .btn-group button .branch').html();
+            GitUI.logs(branchName);
+          }
         });
 
         $('.git-ui .btn-group .branches').on('click', 'a', (event) => {
@@ -265,6 +271,14 @@
             $('.git-ui .tab-pane.commit textarea').prop('disabled', 'disabled');
             $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
           }
+        },
+        disable: () => {
+          $('.git-ui').addClass('disabled');
+          $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
+          $('.git-ui .tab-pane.commit textarea').prop('disabled', true);
+          $('.git-ui .tabbable li').addClass('disabled');
+          $('.git-ui .tabbable li a').addClass('disabled').removeAttr('data-toggle');
+          $('.git-ui .alert.alert-danger .close').hide();
         }
       }
 
