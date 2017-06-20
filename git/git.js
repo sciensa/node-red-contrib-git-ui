@@ -7,26 +7,6 @@ module.exports = (RED) => {
   }
   RED.nodes.registerType('git-ui', gitUiNode);
 
-  RED.httpAdmin.get('/git-ui/node_modules/bootstrap/dist/js/bootstrap.min.js', (req, res) => {
-    const filename = path.join(__dirname, '../node_modules/bootstrap/dist/js/', 'bootstrap.min.js');
-    gitUi.sendFile(res, filename);
-  });
-
-  RED.httpAdmin.get('/git-ui/node_modules/bootstrap/dist/css/bootstrap.min.css', (req, res) => {
-    const filename = path.join(__dirname, '../node_modules/bootstrap/dist/css/', 'bootstrap.min.css');
-    gitUi.sendFile(res, filename);
-  });
-
-  RED.httpAdmin.get('/git-ui/node_modules/moment/min/moment.min.js', (req, res) => {
-    const filename = path.join(__dirname, '../node_modules/moment/min/', 'moment.min.js');
-    gitUi.sendFile(res, filename);
-  });
-
-  RED.httpAdmin.get('/git-ui/node_modules/clipboard/dist/clipboard.min.js', (req, res) => {
-    const filename = path.join(__dirname, '../node_modules/clipboard/dist/', 'clipboard.min.js');
-    gitUi.sendFile(res, filename);
-  });
-
   RED.httpAdmin.get('/git-ui/git-ui.html', (req, res) => {
     const filename = path.join(__dirname, 'git-ui', 'git-ui.html');
     gitUi.sendFile(res, filename);
