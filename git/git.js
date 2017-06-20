@@ -42,8 +42,13 @@ module.exports = (RED) => {
   });
 
   RED.httpAdmin.put('/git-ui/checkout/:branchName', (req, res) => {
-    gitUi.checkout(req.params.branchName).then(() => {
-      res.status(200).send({ status: 'OK' });
+    const home = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME;
+    gitUi.cwd(home).then(() => {
+      gitUi.checkout(req.params.branchName).then(() => {
+        res.status(200).send({ status: 'OK' });
+      }).catch((err) => {
+        res.status(500).send({ error: err });
+      });
     }).catch((err) => {
       res.status(500).send({ error: err });
     });
