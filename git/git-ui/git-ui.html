@@ -7,15 +7,9 @@
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
     <script src="node_modules/moment/min/moment.min.js"></script>
+    <script src="node_modules/clipboard/dist/clipboard.min.js"></script>
   </head>
   <body class="git-ui">
-    <div class="btn-group btn-block" style="padding-top: 10px;">
-      <button type="button" class="btn btn-lg btn-primary btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-        <i class="fa fa-code-fork pull-left" aria-hidden="true"></i>
-        <span class="branch"></span>
-      </button>
-      <ul class="dropdown-menu branches btn-block"></ul>
-    </div>
     <div class="tabbable" style="padding-top: 10px;">
       <ul class="nav nav-tabs">
         <li class="commit active"><a href="#commitTab" data-toggle="tab">Commit</a></li>
@@ -52,25 +46,63 @@
           </form>
         </div>
         <div class="tab-pane logs" id="logsTab">
-          <br />
+          <div class="btn-group btn-block" style="padding-top: 10px; padding-bottom: 10px;">
+            <button type="button" class="btn btn-lg btn-primary btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              <i class="fa fa-code-fork pull-left" aria-hidden="true"></i>
+              <span class="branch"></span>
+            </button>
+            <ul class="dropdown-menu branches btn-block"></ul>
+          </div>
           <div class="commits list-group"></div>
+          <div class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                  <pre id="code"></pre>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-info" data-clipboard-target="#code">
+                    <i class="fa fa-files-o" aria-hidden="true"></i>
+                    Copy
+                  </button>
+                  <button type="button" class="btn btn-danger" data-dismiss="modal">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     <script type="text/javascript">
       $(function() {
+        GitUI.checkout('staging');
         GitUI.branches();
 
         $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
           event.preventDefault();
           GitUI.clearErrors();
 
-          if ($('.git-ui .tab-pane.commit textarea').val() === '') {
-            GitUI.messageRequired();
-            return false;
-          } else {
-            GitUI.commit();
-          }
+          GitUI.status().then((statusSummary) => {
+            if(statusSummary.modified.length > 0) {
+              if ($('.git-ui .tab-pane.commit textarea').val() === '') {
+                GitUI.messageRequired();
+                return false;
+              } else {
+                GitUI.commit();
+              }  
+            } else {
+              Alert.error(`Error`, 'Nothing to commit!');
+            }
+          }).catch((err) => {
+            Alert.error(`Error Showing '${hash}'`, err);
+          });
         });
 
         $('.git-ui .alert').on('click', '.close', (event) => {
@@ -80,17 +112,28 @@
         });
 
         $('.git-ui .nav .logs').on('click', 'a', (event) => {
-          GitUI.logs();
+          const branchName = $('.git-ui .btn-group button .branch').html();
+          GitUI.logs(branchName);
         });
 
-        $('.git-ui .branches').on('click', 'a', (event) => {
+        $('.git-ui .btn-group .branches').on('click', 'a', (event) => {
           event.preventDefault();
           const branchName = $(event.target).text();
-          GitUI.checkout(branchName).then(() => {
-            $('.git-ui .btn-group .branch').empty().html(branchName);
-            GitUI.logs();
+          GitUI.logs(branchName);
+          $('.git-ui .btn-group .branch').empty().html(branchName);
+        });
+
+        $('.git-ui .tab-pane.logs .list-group.commits').on('click', 'a', (event) => {
+          event.preventDefault();
+          const a = $(event.target).closest('a')
+          var hash = a.attr('href');
+          GitUI.show(hash).then((result) => {
+            $('.git-ui .tab-pane.logs .modal .modal-body pre').html(result.object);
+            $('.git-ui .tab-pane.logs .modal .modal-title').html(a.html());
+            $('.git-ui .tab-pane.logs .modal').modal('show');
+            new Clipboard('.btn.btn-info');
           }).catch((err) => {
-            Alert.error(`Error Checking Out '${branchName}'`, err)
+            Alert.error(`Error Showing '${hash}'`, err);
           });
         });
       });
@@ -148,9 +191,9 @@
             }
           });
         },
-        logs: () => {
+        logs: branchName => {
           $.ajax({
-            url: 'logs',
+            url: `logs/${branchName}`,
             type: 'GET',
             dataType: 'json',
             beforeSend: (r) => {
@@ -159,7 +202,7 @@
             success: (result) => {
               var commits = $.map(result.commits, (commit, i) => {
                 return $('<a>', {
-                  href: 'JavaScript: void(0);',
+                  href: `show/${commit.hash}/flows.json`,
                   class: 'list-group-item',
                   text: commit.message
                 }).append($('<small>', { text: `${moment(commit.date, "YYYYMMDD").fromNow()} • ${commit.author_name}` }));
@@ -186,7 +229,42 @@
               reject(JSON.parse(jqXHR.responseText).error);
             }
           });
-        })
+        }),
+        show: (hash) => new Promise((resolve, reject) => {
+          $.ajax({
+            url: hash,
+            type: 'GET',
+            dataType: 'json',
+            success: (result) => {
+              resolve(result);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error);
+            }
+          });
+        }),
+        status: () => new Promise((resolve, reject) => {
+          $.ajax({
+            url: 'status',
+            type: 'GET',
+            dataType: 'json',
+            success: (result) => {
+              resolve(result.statusSummary);
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error);
+            }
+          });
+        }),
+        toggleEnableCommit: (enabled) => {
+          if(enabled) {
+            $('.git-ui .tab-pane.commit textarea').prop('disabled', '');
+            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false);
+          } else {
+            $('.git-ui .tab-pane.commit textarea').prop('disabled', 'disabled');
+            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
+          }
+        }
       }
 
       var Alert = {

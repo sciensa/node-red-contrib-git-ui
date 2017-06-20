@@ -22,6 +22,11 @@ module.exports = (RED) => {
     gitUi.sendFile(res, filename);
   });
 
+  RED.httpAdmin.get('/git-ui/node_modules/clipboard/dist/clipboard.min.js', (req, res) => {
+    const filename = path.join(__dirname, '../node_modules/clipboard/dist/', 'clipboard.min.js');
+    gitUi.sendFile(res, filename);
+  });
+
   RED.httpAdmin.get('/git-ui/git-ui.html', (req, res) => {
     const filename = path.join(__dirname, 'git-ui', 'git-ui.html');
     gitUi.sendFile(res, filename);
@@ -40,8 +45,8 @@ module.exports = (RED) => {
     gitUi.sendFile(res, filename);
   });
 
-  RED.httpAdmin.get('/git-ui/logs', (req, res) => {
-    gitUi.logs().then((logList) => {
+  RED.httpAdmin.get('/git-ui/logs/:branchName', (req, res) => {
+    gitUi.logs(req.params.branchName).then((logList) => {
       res.status(200).send({ commits: logList.all });
     }).catch((err) => {
       res.status(500).send({ error: err });
@@ -59,6 +64,22 @@ module.exports = (RED) => {
   RED.httpAdmin.put('/git-ui/checkout/:branchName', (req, res) => {
     gitUi.checkout(req.params.branchName).then(() => {
       res.status(200).send({ status: 'OK' });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
+    });
+  });
+
+  RED.httpAdmin.get('/git-ui/show/:hash/:fileName', (req, res) => {
+    gitUi.show(req.params.hash, req.params.fileName).then((object) => {
+      res.status(200).send({ object });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
+    });
+  });
+
+  RED.httpAdmin.get('/git-ui/status', (req, res) => {
+    gitUi.status().then((statusSummary) => {
+      res.status(200).send({ statusSummary });
     }).catch((err) => {
       res.status(500).send({ error: err });
     });

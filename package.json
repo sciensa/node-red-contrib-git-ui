@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
+    "clipboard": "^1.7.1",
     "i18next-client": "1.10.3",
     "moment": "^2.18.1",
     "simple-git": "1.73.0"

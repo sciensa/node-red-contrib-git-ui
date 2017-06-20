@@ -52,8 +52,8 @@ module.exports = {
     });
   }),
 
-  logs: () => new Promise((resolve, reject) => {
-    git().log({}, (err, result) => {
+  logs: branchName => new Promise((resolve, reject) => {
+    git().log([branchName], (err, result) => {
       if (err) {
         reject(err);
       } else {
@@ -74,6 +74,26 @@ module.exports = {
 
   checkout: branchName => new Promise((resolve, reject) => {
     git().checkout(branchName, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  }),
+
+  show: (hash, fileName) => new Promise((resolve, reject) => {
+    git().show([`${hash}:${fileName}`], (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  }),
+
+  status: () => new Promise((resolve, reject) => {
+    git().status((err, result) => {
       if (err) {
         reject(err);
       } else {
