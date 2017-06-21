@@ -19,6 +19,10 @@
   cursor: pointer;
 }
 
-.git-ui .tabbable .tab-pane.logs .commits a small, .git-ui .modal .modal-header h4 small {
+.git-ui .tabbable .tab-pane.logs .commits a small, .git-ui .modal .modal-header h6 small {
   display: block; font-size: 10px; color: grey;
+}
+
+.modal .modal-body pre {
+  font-size: 10px;
 }
