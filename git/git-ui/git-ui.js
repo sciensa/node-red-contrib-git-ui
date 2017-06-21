@@ -1,6 +1,6 @@
 const git = require('simple-git')();
 const fs = require('fs');
-const init = require('init-package-json');
+const exec = require('child_process').exec;
 
 const remote = 'origin';
 const branch = 'staging';
@@ -13,9 +13,11 @@ module.exports = {
         reject(err);
       } else {
         // generates a new package.json based on node_modules
-        init(userDir, userDir, { yes: 'yes' }, (er) => {
+        exec('npm init -y', { cwd: userDir }, (er, stdout, stderr) => {
           if (er) {
             reject(er);
+          } else if (stderr) {
+            reject(stderr);
           } else {
             // commits and pushes all changes to the remote branch
             git.add('--all').commit(message).push(remote, branch, (ex, data) => {
