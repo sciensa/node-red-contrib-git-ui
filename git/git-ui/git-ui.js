@@ -4,12 +4,13 @@ const exec = require('child_process').exec;
 
 const remote = 'origin';
 const branch = 'staging';
+const fileDoesNotExist = 'ENOENT';
 
 module.exports = {
   commit: (userDir, message) => new Promise((resolve, reject) => {
     // deletes package.json
     fs.unlink(`${userDir}/package.json`, (err) => {
-      if (err) {
+      if (err && err.code !== fileDoesNotExist) {
         reject(err);
       } else {
         // generates a new package.json based on node_modules
