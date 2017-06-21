@@ -5,6 +5,7 @@ const exec = require('child_process').exec;
 const remote = 'origin';
 const branch = 'staging';
 const fileDoesNotExist = 'ENOENT';
+const successInitMessage = 'init written successfully';
 
 module.exports = {
   commit: (userDir, message) => new Promise((resolve, reject) => {
@@ -14,10 +15,10 @@ module.exports = {
         reject(err);
       } else {
         // generates a new package.json based on node_modules
-        exec('npm init -y', { cwd: userDir }, (er, stdout, stderr) => {
-          if (er) {
-            reject(er);
-          } else if (stderr) {
+        exec('npm init -y', { cwd: userDir }, (error, stdout, stderr) => {
+          if (error) {
+            reject(error);
+          } else if (stderr && !stderr.includes(successInitMessage)) {
             reject(stderr);
           } else {
             // commits and pushes all changes to the remote branch
