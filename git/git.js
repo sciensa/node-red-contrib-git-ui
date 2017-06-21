@@ -43,7 +43,7 @@ module.exports = (RED) => {
   });
 
   RED.httpAdmin.put('/git-ui/checkout/:branchName', (req, res) => {
-    const userDir = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME;
+    const userDir = RED.settings.userDir || RED.process.env.NODE_RED_HOME;
     gitUi.cwd(userDir).then(() => {
       gitUi.checkout(req.params.branchName).then(() => {
         res.status(200).send({ status: 'OK' });
