@@ -63,10 +63,10 @@
                   <h6 class="modal-title">Modal title</h4>
                 </div>
                 <div class="modal-body">
-                  <pre></pre>
+                  <textarea rows="20"></textarea>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-info" data-clipboard-target=".modal .modal-body pre">
+                  <button type="button" class="btn btn-info" data-clipboard-target=".modal .modal-body textarea">
                     <i class="fa fa-files-o" aria-hidden="true"></i>
                     Copy
                   </button>
@@ -135,7 +135,7 @@
           const a = $(event.target).closest('a')
           var hash = a.attr('href');
           GitUI.show(hash).then((result) => {
-            $('.git-ui .tab-pane.logs .modal .modal-body pre').html(result.object);
+            $('.git-ui .tab-pane.logs .modal .modal-body textarea').val(result.object);
             $('.git-ui .tab-pane.logs .modal .modal-title').html(a.html());
             $('.git-ui .tab-pane.logs .modal').modal('show');
             new Clipboard('.btn.btn-info');
