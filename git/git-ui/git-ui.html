@@ -212,7 +212,7 @@
                   href: `show/${commit.hash}/flows.json`,
                   class: 'list-group-item',
                   text: commit.message
-                }).append($('<small>', { text: `${moment(commit.date, "YYYYMMDD").fromNow()} • ${commit.author_name}` }));
+                }).append($('<small>', { text: `${moment(commit.date, "YYYY-MM-DD hh:mm:ss").fromNow()} • ${commit.author_name}` }));
               });
               $('.tab-pane.logs .commits').empty().append(commits);
             },
