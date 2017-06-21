@@ -13,7 +13,8 @@ module.exports = (RED) => {
   });
 
   RED.httpAdmin.post('/git-ui/commit', (req, res) => {
-    gitUi.commit(req.body.message).then((result) => {
+    const userDir = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME;
+    gitUi.commit(userDir, req.body.message).then((result) => {
       res.status(200).send({ status: 'OK', result });
     }).catch((err) => {
       res.status(500).send(err);
@@ -42,8 +43,8 @@ module.exports = (RED) => {
   });
 
   RED.httpAdmin.put('/git-ui/checkout/:branchName', (req, res) => {
-    const home = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME;
-    gitUi.cwd(home).then(() => {
+    const userDir = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME;
+    gitUi.cwd(userDir).then(() => {
       gitUi.checkout(req.params.branchName).then(() => {
         res.status(200).send({ status: 'OK' });
       }).catch((err) => {

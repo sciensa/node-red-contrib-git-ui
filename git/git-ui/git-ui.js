@@ -1,28 +1,26 @@
 const git = require('simple-git')();
 const fs = require('fs');
-const exec = require('child_process').exec;
+const init = require('init-package-json');
 
 const remote = 'origin';
 const branch = 'staging';
 
 module.exports = {
-  commit: message => new Promise((resolve, reject) => {
+  commit: (userDir, message) => new Promise((resolve, reject) => {
     // deletes package.json
-    fs.unlink('./package.json', (err) => {
+    fs.unlink(`${userDir}/package.json`, (err) => {
       if (err) {
         reject(err);
       } else {
         // generates a new package.json based on node_modules
-        exec('npm init -y', (er, stdout, stderr) => {
+        init(userDir, userDir, { yes: 'yes' }, (er) => {
           if (er) {
             reject(er);
-          } else if (stderr) {
-            reject(stderr);
           } else {
             // commits and pushes all changes to the remote branch
-            git().add('--all').commit(message).push(remote, branch, (e, data) => {
-              if (e) {
-                reject(stderr);
+            git.add('--all').commit(message).push(remote, branch, (ex, data) => {
+              if (ex) {
+                reject(ex);
               } else {
                 resolve(data);
               }

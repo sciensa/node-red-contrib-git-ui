@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "i18next-client": "1.10.3",
+    "init-package-json": "^1.10.1",
     "simple-git": "1.73.0"
   }
 }
