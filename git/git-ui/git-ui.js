@@ -1,11 +1,11 @@
-const git = require('simple-git')();
-const fs = require('fs');
-const exec = require('child_process').exec;
+const git = require('simple-git')()
+const fs = require('fs')
+const exec = require('child_process').exec
 
-const remote = 'origin';
-const branch = 'staging';
-const fileDoesNotExist = 'ENOENT';
-const successInitMessage = 'init written successfully';
+const remote = 'origin'
+const branch = 'staging'
+const fileDoesNotExist = 'ENOENT'
+const successInitMessage = 'init written successfully'
 
 module.exports = {
   commit: (userDir, message) => new Promise((resolve, reject) => {
@@ -14,125 +14,148 @@ module.exports = {
     if (fs.existsSync(`${userDir}/package.json`)) {
       fs.unlink(`${userDir}/package.json`, (err) => {
         if (err && err.code !== fileDoesNotExist) {
-          reject(err);
+          reject(err)
         }
-      });
+      })
     }
 
     // generates a new package.json based on node_modules
     exec('npm init -y', { cwd: userDir }, (error, stdout, stderr) => {
       if (error) {
-        reject(error);
+        reject(error)
       } else if (stderr && !stderr.includes(successInitMessage)) {
-        reject(stderr);
+        reject(stderr)
       } else {
         // commits and pushes all changes to the remote branch
         git.add('--all').commit(message).push(remote, branch, (ex, data) => {
           if (ex) {
-            reject(ex);
+            reject(ex)
           } else {
-            resolve(data);
+            resolve(data)
           }
-        });
+        })
       }
-    });
+    })
   }),
 
   sendFile: (res, filename) => {
     // Use the right function depending on Express 3.x/4.x
     if (res.sendFile) {
-      res.sendFile(filename);
+      res.sendFile(filename)
     } else {
-      res.sendfile(filename);
+      res.sendfile(filename)
     }
   },
 
   tags: () => new Promise((resolve, reject) => {
     git.tags({}, (err, tags) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        resolve(tags);
+        resolve(tags)
       }
-    });
+    })
   }),
 
   logs: branchName => new Promise((resolve, reject) => {
     git.log([branchName], (err, result) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        resolve(result);
+        resolve(result)
       }
-    });
+    })
   }),
 
   branches: () => new Promise((resolve, reject) => {
     git.branch(['-vv'], (err, result) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        resolve(result);
+        resolve(result)
       }
-    });
+    })
   }),
 
   checkout: branchName => new Promise((resolve, reject) => {
     git.checkout(branchName, (err, result) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        resolve(result);
+        resolve(result)
       }
-    });
+    })
   }),
 
   show: (hash, fileName) => new Promise((resolve, reject) => {
     git.show([`${hash}:${fileName}`], (err, result) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        resolve(result);
+        resolve(result)
       }
-    });
+    })
   }),
 
   status: () => new Promise((resolve, reject) => {
     git.status((err, result) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        resolve(result);
+        resolve(result)
       }
-    });
+    })
   }),
 
   cwd: dir => new Promise((resolve, reject) => {
     try {
-      git.cwd(dir);
-      resolve(dir);
+      git.cwd(dir)
+      resolve(dir)
     } catch (e) {
-      reject(e);
+      reject(e)
     }
   }),
 
   remoteGet: () => new Promise((resolve, reject) => {
     git.getRemotes(true, (err, result) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        resolve(result[0].refs.push);
+        resolve(result[0].refs.push)
       }
-    });
+    })
   }),
 
   remoteSet: url => new Promise((resolve, reject) => {
     git.raw(['remote', 'set-url', remote, url], (err) => {
       if (err) {
-        reject(err);
-      } else {
-        resolve(url);
+        reject(err)
       }
-    });
+    })
+    git.fetch(['--all'], (err) => {
+      if (err) {
+        reject(err)
+      }
+    }).checkout('staging', (err) => {
+      if (err) {
+        console.log(err)
+        reject(err)
+      }
+    }).pull(remote, branch, (err) => {
+      if (err) {
+        console.log(err)
+        reject(err)
+      }
+    })
   }),
-};
+
+  fetch: () => new Promise((resolve, reject) => {
+    git.fetch(['--all'], (err) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}

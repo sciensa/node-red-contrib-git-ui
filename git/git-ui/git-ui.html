@@ -108,89 +108,90 @@
     <script type="text/javascript">
       $(function () {
         GitUI.checkout('staging').then(() => {
-          GitUI.branches();
+          GitUI.branches()
         }).catch((err) => {
-          Alert.error('Error Checking out Staging!', err);
-          GitUI.disable();
-        });
+          Alert.error('Error Checking out Staging!', err)
+          GitUI.disable()
+        })
 
         $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
-          event.preventDefault();
-          GitUI.clearErrors();
+          event.preventDefault()
+          GitUI.clearErrors()
 
           GitUI.status().then((statusSummary) => {
             if (statusSummary.modified.length > 0) {
               if ($('.git-ui .tab-pane.commit textarea').val() === '') {
-                GitUI.messageRequired();
-                return false;
+                GitUI.messageRequired()
+                return false
               } else {
-                GitUI.commit();
+                GitUI.commit()
               }
             } else {
-              Alert.error(`Error`, 'Nothing to commit!');
+              Alert.error(`Error`, 'Nothing to commit!')
             }
           }).catch((err) => {
-            Alert.error(`Error showing Git Status`, err);
-          });
-        });
+            Alert.error(`Error showing Git Status`, err)
+          })
+        })
 
         $('.git-ui .alert').on('click', '.close', (event) => {
           $(event.target).closest('.alert').slideUp('fast', () => {
-            Alert.clearAndHide();
-          });
-        });
+            Alert.clearAndHide()
+          })
+        })
 
         $('.git-ui .nav .logs').on('click', 'a', (event) => {
           if (!$(event.target).hasClass('disabled')) {
-            const branchName = $('.git-ui .btn-group button .branch').html();
-            GitUI.logs(branchName);
+            const branchName = $('.git-ui .btn-group button .branch').html()
+            GitUI.fetch()
+            GitUI.logs(branchName)
           }
-        });
+        })
 
         $('.git-ui .btn-group .branches').on('click', 'a', (event) => {
-          event.preventDefault();
-          const branchName = $(event.target).text();
-          GitUI.logs(branchName);
-          $('.git-ui .btn-group .branch').empty().html(branchName);
-        });
+          event.preventDefault()
+          const branchName = $(event.target).text()
+          GitUI.logs(branchName)
+          $('.git-ui .btn-group .branch').empty().html(branchName)
+        })
 
         $('.git-ui .tab-pane.logs .list-group.commits').on('click', 'a', (event) => {
-          event.preventDefault();
+          event.preventDefault()
           const a = $(event.target).closest('a')
-          var hash = a.attr('href');
+          var hash = a.attr('href')
           GitUI.show(hash).then((result) => {
-            $('.git-ui .tab-pane.logs .modal .modal-body textarea').val(result.object);
-            $('.git-ui .tab-pane.logs .modal .modal-title').html(a.html());
-            $('#commithash').val(hash);
-            $('.git-ui .tab-pane.logs .modal').modal('show');
-            new Clipboard('.btn.btn-info');
+            $('.git-ui .tab-pane.logs .modal .modal-body textarea').val(result.object)
+            $('.git-ui .tab-pane.logs .modal .modal-title').html(a.html())
+            $('#commithash').val(hash)
+            $('.git-ui .tab-pane.logs .modal').modal('show')
+            new Clipboard('.btn.btn-info')
           }).catch((err) => {
-            Alert.error(`Error Showing '${hash}'`, err);
-          });
-        });
+            Alert.error(`Error Showing '${hash}'`, err)
+          })
+        })
 
         $('.git-ui .nav .config').on('click', 'a', (event) => {
-          GitUI.getRemote();
-        });
+          GitUI.getRemote()
+        })
 
         $('#saveRemoteUrl').on('click', (event) => {
-          event.preventDefault();
-          GitUI.clearErrors();
+          event.preventDefault()
+          GitUI.clearErrors()
           if ($('.git-ui .tab-pane.config input').val() === '') {
-            GitUI.urlRequired();
-            return false;
+            GitUI.urlRequired()
+            return false
           } else {
-            GitUI.setRemote($('.git-ui .tab-pane.config input').val());
+            GitUI.setRemote($('.git-ui .tab-pane.config input').val())
           }
         })
 
         $('#compare').on('click', (event) => {
-          event.preventDefault();
+          event.preventDefault()
           var hash = $('#commithash').val()
-          var diff = {};
+          var diff = {}
           diff.resolveDiffs = function (localDiff, remoteDiff) {
-            var conflicted = {};
-            var resolutions = {};
+            var conflicted = {}
+            var resolutions = {}
 
             var diff = {
               localDiff: localDiff,
@@ -198,85 +199,85 @@
               conflicts: conflicted,
               resolutions: resolutions
             }
-            var seen = {};
-            var id, node;
+            var seen = {}
+            var id, node
             for (id in localDiff.currentConfig.all) {
               if (localDiff.currentConfig.all.hasOwnProperty(id)) {
-                seen[id] = true;
-                var localNode = localDiff.newConfig.all[id];
+                seen[id] = true
+                var localNode = localDiff.newConfig.all[id]
                 if (localDiff.changed[id] && remoteDiff.deleted[id]) {
-                  conflicted[id] = true;
+                  conflicted[id] = true
                 } else if (localDiff.deleted[id] && remoteDiff.changed[id]) {
-                  conflicted[id] = true;
+                  conflicted[id] = true
                 } else if (localDiff.changed[id] && remoteDiff.changed[id]) {
-                  var remoteNode = remoteDiff.newConfig.all[id];
+                  var remoteNode = remoteDiff.newConfig.all[id]
                   if (JSON.stringify(localNode) !== JSON.stringify(remoteNode)) {
-                    conflicted[id] = true;
+                    conflicted[id] = true
                   }
                 }
                 if (!conflicted[id]) {
                   if (remoteDiff.added[id] || remoteDiff.changed[id] || remoteDiff.deleted[id]) {
-                    resolutions[id] = 'remote';
+                    resolutions[id] = 'remote'
                   } else {
-                    resolutions[id] = 'local';
+                    resolutions[id] = 'local'
                   }
                 }
               }
             }
             for (id in localDiff.added) {
               if (localDiff.added.hasOwnProperty(id)) {
-                node = localDiff.newConfig.all[id];
+                node = localDiff.newConfig.all[id]
                 if (remoteDiff.deleted[node.z]) {
-                  conflicted[id] = true;
-                  // conflicted[node.z] = true;
+                  conflicted[id] = true
+                  // conflicted[node.z] = true
                 } else {
-                  resolutions[id] = 'local';
+                  resolutions[id] = 'local'
                 }
               }
             }
             for (id in remoteDiff.added) {
               if (remoteDiff.added.hasOwnProperty(id)) {
-                node = remoteDiff.newConfig.all[id];
+                node = remoteDiff.newConfig.all[id]
                 if (localDiff.deleted[node.z]) {
-                  conflicted[id] = true;
-                  // conflicted[node.z] = true;
+                  conflicted[id] = true
+                  // conflicted[node.z] = true
                 } else {
-                  resolutions[id] = 'remote';
+                  resolutions[id] = 'remote'
                 }
               }
             }
-            // console.log(diff.resolutions);
-            // console.log(conflicted);
-            return diff;
+            // console.log(diff.resolutions)
+            // console.log(conflicted)
+            return diff
           }
           diff.parseNodes = function parseNodes(nodeList) {
-            var tabOrder = [];
-            var tabs = {};
-            var subflows = {};
-            var globals = [];
-            var all = {};
+            var tabOrder = []
+            var tabs = {}
+            var subflows = {}
+            var globals = []
+            var all = {}
 
             nodeList.forEach(function (node) {
-              all[node.id] = node;
+              all[node.id] = node
               if (node.type === 'tab') {
-                tabOrder.push(node.id);
-                tabs[node.id] = { n: node, nodes: [] };
+                tabOrder.push(node.id)
+                tabs[node.id] = { n: node, nodes: [] }
               } else if (node.type === 'subflow') {
-                subflows[node.id] = { n: node, nodes: [] };
+                subflows[node.id] = { n: node, nodes: [] }
               }
-            });
+            })
 
             nodeList.forEach(function (node) {
               if (node.type !== 'tab' && node.type !== 'subflow') {
                 if (tabs[node.z]) {
-                  tabs[node.z].nodes.push(node);
+                  tabs[node.z].nodes.push(node)
                 } else if (subflows[node.z]) {
-                  subflows[node.z].nodes.push(node);
+                  subflows[node.z].nodes.push(node)
                 } else {
-                  globals.push(node);
+                  globals.push(node)
                 }
               }
-            });
+            })
 
             return {
               all: all,
@@ -288,30 +289,30 @@
           }
 
           diff.generateDiff = function (currentNodes, newNodes) {
-            var currentConfig = this.parseNodes(currentNodes);
-            var newConfig = this.parseNodes(newNodes);
-            var added = {};
-            var deleted = {};
-            var changed = {};
-            var moved = {};
+            var currentConfig = this.parseNodes(currentNodes)
+            var newConfig = this.parseNodes(newNodes)
+            var added = {}
+            var deleted = {}
+            var changed = {}
+            var moved = {}
 
             Object.keys(currentConfig.all).forEach(function (id) {
-              var node = parent.RED.nodes.workspace(id) || parent.RED.nodes.subflow(id) || parent.RED.nodes.node(id);
+              var node = parent.RED.nodes.workspace(id) || parent.RED.nodes.subflow(id) || parent.RED.nodes.node(id)
               if (!newConfig.all.hasOwnProperty(id)) {
-                deleted[id] = true;
+                deleted[id] = true
               } else if (JSON.stringify(currentConfig.all[id]) !== JSON.stringify(newConfig.all[id])) {
-                changed[id] = true;
+                changed[id] = true
 
                 if (currentConfig.all[id].z !== newConfig.all[id].z) {
-                  moved[id] = true;
+                  moved[id] = true
                 }
               }
-            });
+            })
             Object.keys(newConfig.all).forEach(function (id) {
               if (!currentConfig.all.hasOwnProperty(id)) {
-                added[id] = true;
+                added[id] = true
               }
-            });
+            })
 
             return {
               currentConfig: currentConfig,
@@ -330,21 +331,21 @@
               cache: false,
               url: currentFlow || 'flows',
               success: function (nodes) {
-                var localFlow = parent.RED.nodes.createCompleteNodeSet();
-                var originalFlow = parent.RED.nodes.originalFlow();
-                var remoteFlow = JSON.parse(nodes.object);
-                var localDiff = diff.generateDiff(originalFlow, localFlow);
-                var remoteDiff = diff.generateDiff(originalFlow, remoteFlow);
-                remoteDiff.rev = nodes.rev;
+                var localFlow = parent.RED.nodes.createCompleteNodeSet()
+                var originalFlow = parent.RED.nodes.originalFlow()
+                var remoteFlow = JSON.parse(nodes.object)
+                var localDiff = diff.generateDiff(originalFlow, localFlow)
+                var remoteDiff = diff.generateDiff(originalFlow, remoteFlow)
+                remoteDiff.rev = nodes.rev
                 callback(diff.resolveDiffs(localDiff, remoteDiff))
               }
-            });
+            })
 
           }
-          $('.git-ui .tab-pane.logs .modal').modal('hide');
-          getRemoteDiff(parent.RED.diff.showRemoteDiff, hash, diff);
-        });
-      });
+          $('.git-ui .tab-pane.logs .modal').modal('hide')
+          getRemoteDiff(parent.RED.diff.showRemoteDiff, hash, diff)
+        })
+      })
 
       var GitUI = {
         commit: () => {
@@ -354,24 +355,24 @@
             dataType: 'json',
             data: $('.git-ui .tab-pane.commit form').serialize(),
             beforeSend: (r) => {
-              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
-              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin');
+              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true)
+              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin')
             },
             success: (r) => {
-              $('.git-ui .tab-pane.commit textarea').val('');
-              Alert.success('Commit done!');
+              $('.git-ui .tab-pane.commit textarea').val('')
+              Alert.success('Commit done!')
             },
             error: (jqXHR, textStatus, errorThrown) => {
               Alert.error('Commit failed!', jqXHR.responseText)
             },
             complete: (r) => {
-              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false);
-              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check');
+              $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false)
+              $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
               setTimeout(() => {
-                $('.git-ui .alert').fadeOut('fast');
-              }, 10000);
+                $('.git-ui .alert').fadeOut('fast')
+              }, 10000)
             }
-          });
+          })
         },
         getRemote: () => {
           $.ajax({
@@ -379,10 +380,10 @@
             type: 'GET',
             dataType: 'json',
             success: (r) => {
-              $('#remoteUrl').val(r.url);
+              $('#remoteUrl').val(r.url)
             },
             error: (jqXHR, textStatus, errorThrown) => {
-              $('#remoteUrl').val('');
+              $('#remoteUrl').val('')
             },
           })
         },
@@ -393,38 +394,50 @@
             dataType: 'json',
             data: { url: url },
             beforeSend: (r) => {
-              $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', true);
-              $('.git-ui .tab-pane.config .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin');
+              $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', true)
+              $('.git-ui .tab-pane.config .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin')
             },
             success: (r) => {
-              $('#remoteUrl').val(r.url);
-              Alert.success('Remote URL set!');
+              $('#remoteUrl').val(r.url)
+              Alert.success('Remote URL set!')
             },
             error: (jqXHR, textStatus, errorThrown) => {
               Alert.error('Failed to set remote URL!', jqXHR.responseText)
             },
             complete: (r) => {
-              $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', false);
-              $('.git-ui .tab-pane.config .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check');
+              $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', false)
+              $('.git-ui .tab-pane.config .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
               setTimeout(() => {
-                $('.git-ui .alert').fadeOut('fast');
-              }, 10000);
+                $('.git-ui .alert').fadeOut('fast')
+              }, 10000)
             }
+          })
+        },
+        fetch: () => {
+          $.ajax({
+            url: 'fetch',
+            type: 'GET',
+            dataType: 'json',
+            success: (r) => {
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              Alert.error('Error fetching branches!', jqXHR.responseText)
+            },
           })
         },
         clearErrors: () => {
           $('.git-ui .tab-pane.commit textarea').closest('.control-group')
-            .removeClass('has-error').find('.help-block').hide();
+            .removeClass('has-error').find('.help-block').hide()
           $('.git-ui .tab-pane.config input').closest('.control-group')
-            .removeClass('has-error').find('.help-block').hide();
+            .removeClass('has-error').find('.help-block').hide()
         },
         messageRequired: () => {
           $('.git-ui .tab-pane.commit textarea').closest('.control-group')
-            .addClass('has-error').find('.help-block').fadeIn('fast');
+            .addClass('has-error').find('.help-block').fadeIn('fast')
         },
         urlRequired: () => {
           $('.git-ui .tab-pane.config input').closest('.control-group')
-            .addClass('has-error').find('.help-block').fadeIn('fast');
+            .addClass('has-error').find('.help-block').fadeIn('fast')
         },
         branches: () => {
           $.ajax({
@@ -433,16 +446,16 @@
             dataType: 'json',
             success: (result) => {
               var branches = $.map(result.branches, (branch, i) => {
-                return $('<li>').append($('<a>', { href: '#', text: branch, class: 'btn-block' }));
-              });
-              $('.git-ui .btn-group .branches').empty().append(branches);
-              $('.git-ui .btn-group .dropdown-toggle .branch').empty().html(result.current);
-              $('.git-ui .btn-group .dropdown-toggle').dropdown();
+                return $('<li>').append($('<a>', { href: '#', text: branch, class: 'btn-block' }))
+              })
+              $('.git-ui .btn-group .branches').empty().append(branches)
+              $('.git-ui .btn-group .dropdown-toggle .branch').empty().html(result.current)
+              $('.git-ui .btn-group .dropdown-toggle').dropdown()
             },
             error: (jqXHR, textStatus, errorThrown) => {
               Alert.error('Error Loading Branches!', jqXHR.responseText)
             }
-          });
+          })
         },
         logs: branchName => {
           $.ajax({
@@ -450,7 +463,7 @@
             type: 'GET',
             dataType: 'json',
             beforeSend: (r) => {
-              $('.git-ui .nav .logs i').show();
+              $('.git-ui .nav .logs i').show()
             },
             success: (result) => {
               var commits = $.map(result.commits, (commit, i) => {
@@ -458,17 +471,17 @@
                   href: `show/${commit.hash}/flows.json`,
                   class: 'list-group-item',
                   text: commit.message
-                }).append($('<small>', { text: `${moment(commit.date, "YYYY-MM-DD hh:mm:ss").fromNow()} • ${commit.author_name}` }));
-              });
-              $('.tab-pane.logs .commits').empty().append(commits);
+                }).append($('<small>', { text: `${moment(commit.date, "YYYY-MM-DD hh:mm:ss").fromNow()} • ${commit.author_name}` }))
+              })
+              $('.tab-pane.logs .commits').empty().append(commits)
             },
             error: (jqXHR, textStatus, errorThrown) => {
               Alert.error('Error Loading Log!', jqXHR.responseText)
             },
             complete: (r) => {
-              $('.git-ui .nav .logs i').fadeOut('fast');
+              $('.git-ui .nav .logs i').fadeOut('fast')
             }
-          });
+          })
         },
         checkout: branchName => new Promise((resolve, reject) => {
           $.ajax({
@@ -476,12 +489,12 @@
             type: 'PUT',
             dataType: 'json',
             success: (result) => {
-              resolve(result);
+              resolve(result)
             },
             error: (jqXHR, textStatus, errorThrown) => {
-              reject(JSON.parse(jqXHR.responseText).error);
+              reject(JSON.parse(jqXHR.responseText).error)
             }
-          });
+          })
         }),
         show: (hash) => new Promise((resolve, reject) => {
           $.ajax({
@@ -489,12 +502,12 @@
             type: 'GET',
             dataType: 'json',
             success: (result) => {
-              resolve(result);
+              resolve(result)
             },
             error: (jqXHR, textStatus, errorThrown) => {
-              reject(JSON.parse(jqXHR.responseText).error);
+              reject(JSON.parse(jqXHR.responseText).error)
             }
-          });
+          })
         }),
         status: () => new Promise((resolve, reject) => {
           $.ajax({
@@ -502,12 +515,12 @@
             type: 'GET',
             dataType: 'json',
             success: (result) => {
-              resolve(result.statusSummary);
+              resolve(result.statusSummary)
             },
             error: (jqXHR, textStatus, errorThrown) => {
-              reject(JSON.parse(jqXHR.responseText).error);
+              reject(JSON.parse(jqXHR.responseText).error)
             }
-          });
+          })
         }),
         diff: (hash) => new Promise((resolve, reject) => {
           $.ajax({
@@ -515,54 +528,54 @@
             type: 'GET',
             dataType: 'json',
             success: (result) => {
-              resolve(result.statusSummary);
+              resolve(result.statusSummary)
             },
             error: (jqXHR, textStatus, errorThrown) => {
-              reject(JSON.parse(jqXHR.responseText).error);
+              reject(JSON.parse(jqXHR.responseText).error)
             }
-          });
+          })
         }),
         toggleEnableCommit: (enabled) => {
           if (enabled) {
-            $('.git-ui .tab-pane.commit textarea').prop('disabled', '');
-            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false);
+            $('.git-ui .tab-pane.commit textarea').prop('disabled', '')
+            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false)
           } else {
-            $('.git-ui .tab-pane.commit textarea').prop('disabled', 'disabled');
-            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
+            $('.git-ui .tab-pane.commit textarea').prop('disabled', 'disabled')
+            $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true)
           }
         },
         disable: () => {
-          $('.git-ui').addClass('disabled');
-          $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true);
-          $('.git-ui .tab-pane.commit textarea').prop('disabled', true);
-          $('.git-ui .tabbable li').addClass('disabled');
-          $('.git-ui .tabbable li a').addClass('disabled').removeAttr('data-toggle');
-          $('.git-ui .alert.alert-danger .close').hide();
+          $('.git-ui').addClass('disabled')
+          $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true)
+          $('.git-ui .tab-pane.commit textarea').prop('disabled', true)
+          $('.git-ui .tabbable li').addClass('disabled')
+          $('.git-ui .tabbable li a').addClass('disabled').removeAttr('data-toggle')
+          $('.git-ui .alert.alert-danger .close').hide()
         }
       }
 
       var Alert = {
         clear: () => {
-          $('.git-ui .alert .message').html('');
-          $('.git-ui .alert .title').html('');
+          $('.git-ui .alert .message').html('')
+          $('.git-ui .alert .title').html('')
         },
         hide: () => {
-          $('.git-ui .alert').hide();
+          $('.git-ui .alert').hide()
         },
         clearAndHide: () => {
-          Alert.clear();
-          Alert.hide();
+          Alert.clear()
+          Alert.hide()
         },
         error: (title, message) => {
-          Alert.clearAndHide();
-          $('.git-ui .alert.alert-danger .title').html(title);
-          $('.git-ui .alert.alert-danger .message').html(message);
-          $('.git-ui .alert.alert-danger').slideDown('fast');
+          Alert.clearAndHide()
+          $('.git-ui .alert.alert-danger .title').html(title)
+          $('.git-ui .alert.alert-danger .message').html(message)
+          $('.git-ui .alert.alert-danger').slideDown('fast')
         },
         success: (message) => {
-          Alert.clearAndHide();
-          $('.git-ui .alert.alert-success .message').html(message);
-          $('.git-ui .alert.alert-success').slideDown('fast');
+          Alert.clearAndHide()
+          $('.git-ui .alert.alert-success .message').html(message)
+          $('.git-ui .alert.alert-success').slideDown('fast')
         }
       }
     </script>

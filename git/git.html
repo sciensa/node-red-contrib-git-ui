@@ -4,7 +4,7 @@
 </script>
 
 <script type="text/javascript">
-  var gitDocUrl;
+  var gitDocUrl
   (function () {
     RED.nodes.registerType('git-ui', {
       category: 'config',
@@ -18,29 +18,29 @@
         }
       },
       label: () => {
-        return this.name || 'git-ui';
+        return this.name || 'git-ui'
       },
       onpaletteadd: () => { //setup git-ui
         var content = $('<div/>', {
           id: 'tab-git-ui',
           style: 'position: relative; padding: 0px 4px; height: 100%; overflow: hidden'
-        });
+        })
 
-        gitDocUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}${RED.settings.httpNodeRoot}http-api/git.json`;
+        gitDocUrl = `${window.location.protocol}//${window.location.hostname}:${window.location.port}${RED.settings.httpNodeRoot}http-api/git.json`
         var gitFrame = $('<iframe/>', {
           id: 'git-ui-frame',
           style: 'margin: 0; padding: 0; border: none; width: 100%; height: 100%',
           src: 'git-ui/git-ui.html'
-        }).appendTo(content);
+        }).appendTo(content)
 
         RED.sidebar.addTab({
           id: 'git-ui',
           label: 'git-ui',
           name: 'git-ui',
           content: content
-        });
+        })
       }
-    });
-  })();
+    })
+  })()
 
 </script>
