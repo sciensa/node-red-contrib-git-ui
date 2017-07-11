@@ -1,4 +1,8 @@
-const git = require('simple-git')()
+const git = require('simple-git')().outputHandler(function (command, stdout, stderr) {
+  console.log(command)
+  stdout.pipe(process.stdout)
+  stderr.pipe(process.stdout)
+})
 const fs = require('fs')
 const exec = require('child_process').exec
 
@@ -10,7 +14,6 @@ const successInitMessage = 'init written successfully'
 module.exports = {
   commit: (userDir, message) => new Promise((resolve, reject) => {
     // deletes package.json
-
     if (fs.existsSync(`${userDir}/package.json`)) {
       fs.unlink(`${userDir}/package.json`, (err) => {
         if (err && err.code !== fileDoesNotExist) {
@@ -132,21 +135,6 @@ module.exports = {
         reject(err)
       }
     })
-    git.fetch(['--all'], (err) => {
-      if (err) {
-        reject(err)
-      }
-    }).checkout('staging', (err) => {
-      if (err) {
-        console.log(err)
-        reject(err)
-      }
-    }).pull(remote, branch, (err) => {
-      if (err) {
-        console.log(err)
-        reject(err)
-      }
-    })
   }),
 
   fetch: () => new Promise((resolve, reject) => {
@@ -155,6 +143,47 @@ module.exports = {
         reject(err)
       } else {
         resolve()
+      }
+    })
+  }),
+
+  update: (branchName, force, userDir) => new Promise((resolve, reject) => {
+    this.branch().then((branches) => {
+      // if the branch does not exist on remote, create an empty commit and push the branch to remote
+      // const branches = this.branches()
+      if (!branches.branches) {
+        git.checkoutBranch(branchName, userDir, (err) => {
+          if (err) {
+            reject(err)
+          }
+        }).commit('first commit', null, { '--allow-empty': true }, (err) => {
+          if (err) {
+            reject(err)
+          }
+        }).push(remote, branchName, (err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      } else {
+        // if the branch exists, update the local repo
+        if (force) {
+          // discards all local changes
+          git.reset(['--hard', `${remote}/${branchName}`], (err) => {
+            if (err) {
+              reject(err)
+            }
+          })
+        }
+        git.pull((err) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
       }
     })
   })

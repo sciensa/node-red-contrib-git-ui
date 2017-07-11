@@ -101,6 +101,29 @@
               </div>
               <button type="submit" id="saveRemoteUrl" class="btn btn-primary" style="margin-top: 10px;">Save</button>
             </div>
+            <div class="modal fade" tabindex="-1" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h6 class="modal-title">Warning</h4>
+                  </div>
+                  <div class="modal-body">
+                    This will overwrite any local changes. Proceed anyway?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-info" data-clipboard-target=".modal .modal-body textarea" id="forceUpdate">
+                    <i class="fa fa-files-o" aria-hidden="true"></i>
+                    Yes
+                  </button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" id="cancelUpdate">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                    Cancel
+                  </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -181,8 +204,25 @@
             GitUI.urlRequired()
             return false
           } else {
-            GitUI.setRemote($('.git-ui .tab-pane.config input').val())
+            GitUI.status().then((statusSummary) => {
+              GitUI.setRemote($('.git-ui .tab-pane.config input').val())
+              if (statusSummary.modified.length < 0) {
+                GitUI.update('staging', false)
+              } else {
+                $('.git-ui .tab-pane.config .modal').modal('show')
+              }
+            })
+
           }
+        })
+
+        $('#forceUpdate').on('click', (event) => {
+          event.preventDefault()
+          GitUI.update('staging', true)
+        })
+
+        $('#cancelUpdate').on('click', (event) => {
+          $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', false)
         })
 
         $('#compare').on('click', (event) => {
@@ -529,6 +569,22 @@
             dataType: 'json',
             success: (result) => {
               resolve(result.statusSummary)
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error)
+            }
+          })
+        }),
+        update: (branch, force) => new Promise((resolve, reject) => {
+          $.ajax({
+            url: `update/${branch}`,
+            type: 'PUT',
+            dataType: 'json',
+            data: {
+              force: force
+            },
+            success: (result) => {
+              resolve(result)
             },
             error: (jqXHR, textStatus, errorThrown) => {
               reject(JSON.parse(jqXHR.responseText).error)
