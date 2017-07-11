@@ -14,12 +14,12 @@
   margin-top: -9px;
 }
 
-.git-ui .tabbable .tab-pane.logs .commits a {
+.git-ui .tabbable .tab-pane.logs .commits .config a {
   font-size: 13px;
   cursor: pointer;
 }
 
-.git-ui .tabbable .tab-pane.logs .commits a small, .git-ui .modal .modal-header h6 small {
+.git-ui .tabbable .tab-pane.logs .commits .config a small, .git-ui .modal .modal-header h6 small {
   display: block; font-size: 10px; color: grey;
 }
 

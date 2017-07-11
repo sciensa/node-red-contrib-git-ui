@@ -70,4 +70,20 @@ module.exports = (RED) => {
       res.status(500).send({ error: err });
     });
   });
+
+  RED.httpAdmin.get('/git-ui/remote', (req, res) => {
+    gitUi.remoteGet().then((url) => {
+      res.status(200).send({ url });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
+    });
+  });
+
+  RED.httpAdmin.put('/git-ui/remote', (req, res) => {
+    gitUi.remoteSet(req.body.url).then((url) => {
+      res.status(200).send({ url });
+    }).catch((err) => {
+      res.status(500).send({ error: err });
+    });
+  });
 };
