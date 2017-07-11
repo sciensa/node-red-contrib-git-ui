@@ -111,4 +111,13 @@ module.exports = (RED) => {
       res.status(500).send({ error: err })
     })
   })
+
+  RED.httpAdmin.put('/git-ui/createLocalRepo', (req, res) => {
+    const userDir = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME
+    gitUi.createLocalRepo(userDir).then((url) => {
+      res.status(200).send({ status: 'OK' })
+    }).catch((err) => {
+      res.status(500).send(err)
+    })
+  })
 }

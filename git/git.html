@@ -39,6 +39,58 @@
           name: 'git-ui',
           content: content
         })
+
+
+        var gitUi = {
+          createlocalRepo: () => {
+            $.ajax({
+              url: 'git-ui/createlocalRepo',
+              type: 'put',
+              dataType: 'json',
+              success: (r) => {
+                $('.git-ui .tab-pane.commit textarea').val('')
+                Alert.success('Local Repository sucessfuly created!')
+              },
+              error: (jqXHR, textStatus, errorThrown) => {
+                Alert.error('Error on create local repository!', jqXHR.responseText)
+              },
+              complete: (r) => {
+                $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false)
+                $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
+                setTimeout(() => {
+                  $('.git-ui .alert').fadeOut('fast')
+                }, 10000)
+              }
+            })
+          }
+        }
+
+        var Alert = {
+          clear: () => {
+            $('.git-ui .alert .message').html('')
+            $('.git-ui .alert .title').html('')
+          },
+          hide: () => {
+            $('.git-ui .alert').hide()
+          },
+          clearAndHide: () => {
+            Alert.clear()
+            Alert.hide()
+          },
+          error: (title, message) => {
+            Alert.clearAndHide()
+            $('.git-ui .alert.alert-danger .title').html(title)
+            $('.git-ui .alert.alert-danger .message').html(message)
+            $('.git-ui .alert.alert-danger').slideDown('fast')
+          },
+          success: (message) => {
+            Alert.clearAndHide()
+            $('.git-ui .alert.alert-success .message').html(message)
+            $('.git-ui .alert.alert-success').slideDown('fast')
+          }
+        }
+
+        gitUi.createlocalRepo()
       }
     })
   })()

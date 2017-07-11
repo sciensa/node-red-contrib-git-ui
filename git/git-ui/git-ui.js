@@ -1,7 +1,6 @@
 const git = require('simple-git')().outputHandler(function (command, stdout, stderr) {
-  console.log(command)
   stdout.pipe(process.stdout)
-  stderr.pipe(process.stdout)
+  stderr.pipe(process.stderr)
 })
 const fs = require('fs')
 const exec = require('child_process').exec
@@ -41,6 +40,13 @@ module.exports = {
     })
   }),
 
+  createLocalRepo: (userDir) => new Promise((resolve, reject) => {
+    if (!fs.existsSync(`${userDir}/.git`)) {
+      git.init((err) => {
+        console.log(err)
+      })
+    }
+  }),
   sendFile: (res, filename) => {
     // Use the right function depending on Express 3.x/4.x
     if (res.sendFile) {
