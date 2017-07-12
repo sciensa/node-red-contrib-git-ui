@@ -99,21 +99,24 @@
                 <input name="remoteUrl" id="remoteUrl" placeholder="git@github.com:sciensa/exampleurl.git" size="35" aria-describedby="configHelpBlock">
                 <span id="configHelpBlock" class="help-block" style="display: none;">URL is required!</span>
               </div>
-              <button type="submit" id="saveRemoteUrl" class="btn btn-primary" style="margin-top: 10px;">Save</button>
+              <button type="submit" id="saveRemoteUrl" class="btn btn-primary" style="margin-top: 10px;"><i class="fa fa-check" aria-hidden="true"></i>Save and Update</button>
             </div>
-            <div class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal fade" tabindex="-1" role="dialog" id="updateModal">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
                   <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h6 class="modal-title">Warning</h4>
+                    <h4 class="modal-title">Warning</h4>
                   </div>
                   <div class="modal-body">
-                    This will overwrite any local changes. Proceed anyway?
+                    <p>The remote URL was set, but your local files and the remote repository have diverged.<br> Oncoming changes
+                      WILL overwrite your local flows.
+                    </p>
+                    <p>Proceed anyway?</p>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-info" data-clipboard-target=".modal .modal-body textarea" id="forceUpdate">
-                    <i class="fa fa-files-o" aria-hidden="true"></i>
+                    <i class="fa fa-check" aria-hidden="true"></i>
                     Yes
                   </button>
                     <button type="button" class="btn btn-danger" data-dismiss="modal" id="cancelUpdate">
@@ -200,20 +203,20 @@
         $('#saveRemoteUrl').on('click', (event) => {
           event.preventDefault()
           GitUI.clearErrors()
-          if ($('.git-ui .tab-pane.config input').val() === '') {
-            GitUI.urlRequired()
-            return false
-          } else {
-            GitUI.status().then((statusSummary) => {
-              GitUI.setRemote($('.git-ui .tab-pane.config input').val())
-              if (statusSummary.modified.length < 0) {
-                GitUI.update('staging', false)
-              } else {
-                $('.git-ui .tab-pane.config .modal').modal('show')
-              }
-            })
-
-          }
+          GitUI.setRemote($('.git-ui .tab-pane.config input').val()).then(() => {
+            if ($('.git-ui .tab-pane.config input').val() === '') {
+              GitUI.urlRequired()
+              return false
+            } else {
+              GitUI.status().then((statusSummary) => {
+                if (statusSummary.modified.length > 0) {
+                  $('#updateModal').modal('show')
+                } else {
+                  GitUI.update('staging', false)
+                }
+              })
+            }
+          })
         })
 
         $('#forceUpdate').on('click', (event) => {
@@ -427,7 +430,7 @@
             },
           })
         },
-        setRemote: (url) => {
+        setRemote: (url) => new Promise((resolve, reject) => {
           $.ajax({
             url: 'remote',
             type: 'PUT',
@@ -440,8 +443,10 @@
             success: (r) => {
               $('#remoteUrl').val(r.url)
               Alert.success('Remote URL set!')
+              resolve(r)
             },
             error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error)
               Alert.error('Failed to set remote URL!', jqXHR.responseText)
             },
             complete: (r) => {
@@ -452,7 +457,7 @@
               }, 10000)
             }
           })
-        },
+        }),
         fetch: () => {
           $.ajax({
             url: 'fetch',
@@ -577,17 +582,35 @@
         }),
         update: (branch, force) => new Promise((resolve, reject) => {
           $.ajax({
-            url: `update/${branch}`,
+            url: `update/${branch}?force=${force}`,
             type: 'PUT',
             dataType: 'json',
-            data: {
-              force: force
+            beforeSend: (r) => {
+              $('#forceUpdate').prop('disabled', true)
+              $('#cancelUpdate').prop('disabled', true)
+              $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', true)
+              $('.git-ui .tab-pane.config .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin')
+              $('#forceUpdate i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin')
             },
-            success: (result) => {
-              resolve(result)
+            success: (r) => {
+              $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', false)
+              Alert.success('Local files updated! Restart Node-Red to reload flows.')
+              resolve(r)
             },
             error: (jqXHR, textStatus, errorThrown) => {
               reject(JSON.parse(jqXHR.responseText).error)
+              Alert.error('Update Failed.')
+            },
+            complete: (r) => {
+              $('#forceUpdate').prop('disabled', false)
+              $('#cancelUpdate').prop('disabled', false)
+              $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', false)
+              $('.git-ui .tab-pane.config .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
+              $('#forceUpdate i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
+              $('#updateModal').modal('hide')
+              setTimeout(() => {
+                $('.git-ui .alert').fadeOut('fast')
+              }, 10000)
             }
           })
         }),

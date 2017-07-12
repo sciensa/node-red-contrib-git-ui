@@ -1,7 +1,4 @@
-const git = require('simple-git')().outputHandler(function (command, stdout, stderr) {
-  stdout.pipe(process.stdout)
-  stderr.pipe(process.stderr)
-})
+const git = require('simple-git')()
 const fs = require('fs')
 const exec = require('child_process').exec
 
@@ -139,6 +136,8 @@ module.exports = {
     git.raw(['remote', 'set-url', remote, url], (err) => {
       if (err) {
         reject(err)
+      } else {
+        resolve(url)
       }
     })
   }),
@@ -154,7 +153,10 @@ module.exports = {
   }),
 
   update: (branchName, force, userDir) => new Promise((resolve, reject) => {
-    this.branch().then((branches) => {
+    git.branch(['-vv'], (err, branches) => {
+      if (err) {
+        reject(err)
+      }
       // if the branch does not exist on remote, create an empty commit and push the branch to remote
       // const branches = this.branches()
       if (!branches.branches) {
@@ -178,6 +180,10 @@ module.exports = {
         if (force) {
           // discards all local changes
           git.reset(['--hard', `${remote}/${branchName}`], (err) => {
+            if (err) {
+              reject(err)
+            }
+          }).clean('f', (err) => {
             if (err) {
               reject(err)
             }
