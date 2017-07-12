@@ -40,10 +40,15 @@ module.exports = {
   createLocalRepo: (userDir) => new Promise((resolve, reject) => {
     if (!fs.existsSync(`${userDir}/.git`)) {
       git.init((err) => {
-        console.log(err)
+        if (err) {
+          reject(err)
+        } else {
+          resolve()
+        }
       })
     }
   }),
+
   sendFile: (res, filename) => {
     // Use the right function depending on Express 3.x/4.x
     if (res.sendFile) {
@@ -133,11 +138,27 @@ module.exports = {
   }),
 
   remoteSet: url => new Promise((resolve, reject) => {
-    git.raw(['remote', 'set-url', remote, url], (err) => {
+    git.getRemotes(true, (err, result) => {
       if (err) {
         reject(err)
       } else {
-        resolve(url)
+        if (!result.filter((r) => { return r.name === 'origin' })[0]) {
+          git.raw(['remote', 'add', remote, url], (err) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve(url)
+            }
+          })
+        } else {
+          git.raw(['remote', 'set-url', remote, url], (err) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve(url)
+            }
+          })
+        }
       }
     })
   }),
@@ -152,50 +173,74 @@ module.exports = {
     })
   }),
 
-  update: (branchName, force, userDir) => new Promise((resolve, reject) => {
-    git.branch(['-vv'], (err, branches) => {
+  update: (branchName, force) => new Promise((resolve, reject) => {
+    git.fetch(['--all']).raw(['branch', '-r'], (err, result) => {
       if (err) {
         reject(err)
-      }
-      // if the branch does not exist on remote, create an empty commit and push the branch to remote
-      // const branches = this.branches()
-      if (!branches.branches) {
-        git.checkoutBranch(branchName, userDir, (err) => {
-          if (err) {
-            reject(err)
-          }
-        }).commit('first commit', null, { '--allow-empty': true }, (err) => {
-          if (err) {
-            reject(err)
-          }
-        }).push(remote, branchName, (err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
       } else {
-        // if the branch exists, update the local repo
-        if (force) {
-          // discards all local changes
-          git.reset(['--hard', `${remote}/${branchName}`], (err) => {
+        // if the branch does not exist on remote, create an empty commit and push the branch to remote
+        if (!result || !result.split('\n').filter((b) => { return b.substring(b.indexOf('/') + 1) === 'staging' })[0]) {
+          git.checkoutLocalBranch(branchName, (err) => {
             if (err) {
               reject(err)
+            } else {
+              git.commit('first commit', null, { '--allow-empty': true }, (err) => {
+                if (err) {
+                  reject(err)
+                } else {
+                  git.push(remote, branchName, (err) => {
+                    if (err) {
+                      reject(err)
+                    } else {
+                      resolve()
+                    }
+                  })
+                }
+              })
             }
-          }).clean('f', (err) => {
+          })
+        } else {
+          git.status((err, statusSummary) => {
             if (err) {
               reject(err)
+            } else {
+              // if the branch exists, update the local repo
+              if (force) {
+                // discards all local changes
+                git.reset(['--hard'], (err) => {
+                  if (err) {
+                    reject(err)
+                  }
+                }).clean('f', (err) => {
+                  if (err) {
+                    reject(err)
+                  }
+                })
+              }
+              // if not on branch staging, checks out origin/staging
+              if (statusSummary.tracking !== `${remote}/${branch}`) {
+                git.checkout(branchName, (err, result) => {
+                  if (err) {
+                    reject(err)
+                  }
+                })
+              }
+              // pulls
+              git.pull((err) => {
+                if (err) {
+                  reject(err)
+                } else {
+                  resolve()
+                }
+              })
+              exec('npm install', (error, stdout, stderr) => {
+                if (error) {
+                  reject(error)
+                }
+              })
             }
           })
         }
-        git.pull((err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
       }
     })
   })

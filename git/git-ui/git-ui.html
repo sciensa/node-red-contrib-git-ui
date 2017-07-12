@@ -133,11 +133,13 @@
     </div>
     <script type="text/javascript">
       $(function () {
-        GitUI.checkout('staging').then(() => {
-          GitUI.branches()
-        }).catch((err) => {
-          Alert.error('Error Checking out Staging!', err)
-          GitUI.disable()
+        GitUI.checkRemote().then(() => {
+          GitUI.checkout('staging').then(() => {
+            GitUI.branches()
+          }).catch((err) => {
+            Alert.error('Error Checking out Staging!', err)
+            GitUI.disable()
+          })
         })
 
         $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
@@ -167,11 +169,13 @@
         })
 
         $('.git-ui .nav .logs').on('click', 'a', (event) => {
-          if (!$(event.target).hasClass('disabled')) {
-            const branchName = $('.git-ui .btn-group button .branch').html()
-            GitUI.fetch()
-            GitUI.logs(branchName)
-          }
+          GitUI.checkRemote().then(() => {
+            if (!$(event.target).hasClass('disabled')) {
+              const branchName = $('.git-ui .btn-group button .branch').html()
+              GitUI.fetch()
+              GitUI.logs(branchName)
+            }
+          })
         })
 
         $('.git-ui .btn-group .branches').on('click', 'a', (event) => {
@@ -289,8 +293,6 @@
                 }
               }
             }
-            // console.log(diff.resolutions)
-            // console.log(conflicted)
             return diff
           }
           diff.parseNodes = function parseNodes(nodeList) {
@@ -417,19 +419,21 @@
             }
           })
         },
-        getRemote: () => {
+        getRemote: () => new Promise((resolve, reject) => {
           $.ajax({
             url: 'remote',
             type: 'GET',
             dataType: 'json',
             success: (r) => {
               $('#remoteUrl').val(r.url)
+              resolve(r)
             },
             error: (jqXHR, textStatus, errorThrown) => {
               $('#remoteUrl').val('')
+              reject(JSON.parse(jqXHR.responseText).error)
             },
           })
-        },
+        }),
         setRemote: (url) => new Promise((resolve, reject) => {
           $.ajax({
             url: 'remote',
@@ -443,6 +447,7 @@
             success: (r) => {
               $('#remoteUrl').val(r.url)
               Alert.success('Remote URL set!')
+              GitUI.toggleEnableCommit(true)
               resolve(r)
             },
             error: (jqXHR, textStatus, errorThrown) => {
@@ -630,7 +635,18 @@
           $('.git-ui .tabbable li').addClass('disabled')
           $('.git-ui .tabbable li a').addClass('disabled').removeAttr('data-toggle')
           $('.git-ui .alert.alert-danger .close').hide()
-        }
+        },
+        checkRemote: () => new Promise((resolve, reject) => {
+          GitUI.getRemote().then((r) => {
+            if (r.url) {
+              resolve()
+            } else {
+              Alert.error('A remote URL is not set.', 'Please enter the remote repository URL at the config tab.')
+              GitUI.toggleEnableCommit(false)
+              reject()
+            }
+          })
+        }),
       }
 
       var Alert = {

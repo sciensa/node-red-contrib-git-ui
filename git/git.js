@@ -104,8 +104,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.put('/git-ui/update/:branchName', (req, res) => {
-    const userDir = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME
-    gitUi.update(req.params.branchName, req.query.force || false, userDir).then((url) => {
+    gitUi.update(req.params.branchName, req.query.force || false).then((url) => {
       res.status(200).send({ url })
     }).catch((err) => {
       res.status(500).send({ error: err })
