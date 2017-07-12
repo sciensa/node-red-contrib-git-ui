@@ -39,13 +39,7 @@ module.exports = {
 
   createLocalRepo: (userDir) => new Promise((resolve, reject) => {
     if (!fs.existsSync(`${userDir}/.git`)) {
-      git.init((err) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve()
-        }
-      })
+      git.init()
     }
   }),
 
