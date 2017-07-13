@@ -201,7 +201,7 @@ module.exports = {
               // if the branch exists, update the local repo
               if (force) {
                 // discards all local changes
-                git.reset(['--hard'], (err) => {
+                git.reset(['--hard', `${remote}/${branch}`], (err) => {
                   if (err) {
                     reject(err)
                   }

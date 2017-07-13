@@ -213,7 +213,7 @@
               return false
             } else {
               GitUI.status().then((statusSummary) => {
-                if (statusSummary.modified.length > 0) {
+                if (statusSummary.modified.length > 0 || GitUI.getRemote !== $('.git-ui .tab-pane.config input').val()) {
                   $('#updateModal').modal('show')
                 } else {
                   GitUI.update('staging', false)
