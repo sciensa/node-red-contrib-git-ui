@@ -1,5 +1,3 @@
-# node-red-contrib-git-ui
-
 A simple [Node-Red](http://nodered.org) git ui.
 
 [![NodeRed](https://img.shields.io/badge/Node--Red-0.16.2-red.svg)](http://nodered.org)
@@ -25,12 +23,31 @@ Requires [Node-Red](http://nodered.org) version 0.16.2 or more recent.
 
 ## Usage
 
-1. Make some changes to the flow and deploy them
-2. Open the git-ui tab
-3. Add a commit message
-4. Click on commit
+1 - Configure your remote repository in the Config tab
 
-<img width="308" alt="screen shot 2017-06-09 at 7 15 10 am" src="https://user-images.githubusercontent.com/361140/26971414-6ea1967c-4ce3-11e7-90da-721aeaf2eed0.png">
+![aba config.PNG](https://bitbucket.org/repo/kM5R6aM/images/1730269655-aba%20config.PNG)
+
+
+
+2 - Choose a branch to list the commits
+
+![aba log.PNG](https://bitbucket.org/repo/kM5R6aM/images/3028231098-aba%20log.PNG)
+
+
+
+3 - Click in the especific commit to see the details 
+
+![commit details.PNG](https://bitbucket.org/repo/kM5R6aM/images/2482319753-commit%20details.PNG)
+
+
+
+4 - Make some changes to the flow and deploy them  
+5 - Open the git-ui tab  
+6 - Add a commit message  
+7 - Click on commit  
+
+![aba commit.PNG](https://bitbucket.org/repo/kM5R6aM/images/3310050031-aba%20commit.PNG)
+
 
 ## Development
 
