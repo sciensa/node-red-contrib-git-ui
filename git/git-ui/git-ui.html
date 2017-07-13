@@ -204,6 +204,16 @@
           GitUI.getRemote()
         })
 
+        $('.git-ui .tab-pane.config input').on('blur', (event) => {
+          const regex = new RegExp('git@([a-zA-z]+)\.([a-z]+):([a-zA-Z0-9-_]+)*\/([a-zA-Z0-9-.]+)*(\.git)?')
+          if (!regex.test(event.target.value)) {
+            Alert.error('Error', 'Invalid URL')
+            $('#saveRemoteUrl').prop('disabled', true)
+          } else {
+            $('#saveRemoteUrl').prop('disabled', false)
+          }
+        })
+
         $('#saveRemoteUrl').on('click', (event) => {
           event.preventDefault()
           GitUI.clearErrors()
