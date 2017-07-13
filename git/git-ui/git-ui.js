@@ -18,7 +18,7 @@ module.exports = {
       })
     }
 
-    // generates a new package.json based on node_modules
+    // generates a new package.json based on node_modules in order to keep installed nodes
     exec('npm init -y', { cwd: userDir }, (error, stdout, stderr) => {
       if (error) {
         reject(error)
@@ -227,6 +227,7 @@ module.exports = {
                   resolve()
                 }
               })
+              // installs additional nodes according to the generated package.json
               exec('npm install', (error, stdout, stderr) => {
                 if (error) {
                   reject(error)

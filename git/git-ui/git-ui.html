@@ -638,15 +638,26 @@
         },
         checkRemote: () => new Promise((resolve, reject) => {
           GitUI.getRemote().then((r) => {
+            // Check if remote url is set
             if (r.url) {
-              resolve()
+              GitUI.status().then((statusSummary) => {
+                // Check if current branch is 'staging'
+                if (statusSummary.tracking && statusSummary.tracking.substring(statusSummary.tracking.indexOf('/') + 1) === 'staging') {
+                  resolve()
+                } else {
+                  Alert.error('The current branch is not \'staging\'. Please click on \'Save and Update\' at the config tab to create the correct branch.')
+                  GitUI.toggleEnableCommit(false)
+                  reject()
+                }
+              })
+
             } else {
               Alert.error('A remote URL is not set.', 'Please enter the remote repository URL at the config tab.')
               GitUI.toggleEnableCommit(false)
               reject()
             }
           })
-        }),
+        })
       }
 
       var Alert = {
