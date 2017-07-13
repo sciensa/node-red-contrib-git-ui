@@ -2,7 +2,7 @@ const path = require('path')
 const gitUi = require('./git-ui/git-ui')
 
 module.exports = (RED) => {
-  function gitUiNode (config) {
+  function gitUiNode(config) {
     RED.nodes.createNode(this, config)
   }
   RED.nodes.registerType('git-ui', gitUiNode)
@@ -57,6 +57,14 @@ module.exports = (RED) => {
 
   RED.httpAdmin.get('/git-ui/show/:hash/:fileName', (req, res) => {
     gitUi.show(req.params.hash, req.params.fileName).then((object) => {
+      res.status(200).send({ object })
+    }).catch((err) => {
+      res.status(500).send({ error: err })
+    })
+  })
+
+  RED.httpAdmin.get('/git-ui/show/:hash', (req, res) => {
+    gitUi.show(req.params.hash, RED.settings.get('flowFile') || 'flows_' + require('os').hostname() + '.json').then((object) => {
       res.status(200).send({ object })
     }).catch((err) => {
       res.status(500).send({ error: err })

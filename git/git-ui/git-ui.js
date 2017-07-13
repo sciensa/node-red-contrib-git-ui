@@ -173,7 +173,7 @@ module.exports = {
         reject(err)
       } else {
         // if the branch does not exist on remote, create an empty commit and push the branch to remote
-        if (!result || !result.split('\n').filter((b) => { return b.substring(b.indexOf('/') + 1) === 'staging' })[0]) {
+        if (!result || !result.split('\n').filter((b) => { return b.substring(b.indexOf('/') + 1) === branchName })[0]) {
           git.checkoutLocalBranch(branchName, (err) => {
             if (err) {
               reject(err)
@@ -182,7 +182,7 @@ module.exports = {
                 if (err) {
                   reject(err)
                 } else {
-                  git.push(remote, branchName, (err) => {
+                  git.raw(['push', '--set-upstream', `${remote}/${branchName}`], (err) => {
                     if (err) {
                       reject(err)
                     } else {
@@ -205,7 +205,7 @@ module.exports = {
                   if (err) {
                     reject(err)
                   }
-                }).clean('f', (err) => {
+                }).raw(['clean', '-d', '-f'], (err) => {
                   if (err) {
                     reject(err)
                   }

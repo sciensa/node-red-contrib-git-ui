@@ -518,7 +518,7 @@
             success: (result) => {
               var commits = $.map(result.commits, (commit, i) => {
                 return $('<a>', {
-                  href: `show/${commit.hash}/flows.json`,
+                  href: `show/${commit.hash}`,
                   class: 'list-group-item',
                   text: commit.message
                 }).append($('<small>', { text: `${moment(commit.date, "YYYY-MM-DD hh:mm:ss").fromNow()} • ${commit.author_name}` }))
