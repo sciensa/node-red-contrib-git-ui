@@ -147,7 +147,7 @@
           GitUI.clearErrors()
 
           GitUI.status().then((statusSummary) => {
-            if (statusSummary.modified.length > 0) {
+            if (statusSummary.modified.length > 0 || statusSummary.not_added.length > 0 || statusSummary.deleted.length > 0) {
               if ($('.git-ui .tab-pane.commit textarea').val() === '') {
                 GitUI.messageRequired()
                 return false
