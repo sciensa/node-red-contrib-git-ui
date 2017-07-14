@@ -1,14 +1,14 @@
 {
   "name": "node-red-contrib-git-ui",
-  "version": "0.1.10",
+  "version": "1.0.1",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/sciensa/node-red-contrib-git-ui.git"
+    "url": "git+ssh://git@bitbucket.org:sciensa/node-red-contrib-git-ui.git"
   },
-  "homepage": "https://github.com/sciensa/node-red-contrib-git-ui#readme",
+  "homepage": "https://bitbucket.org/sciensa/node-red-contrib-git-ui#readme",
   "bugs": {
-    "url": "https://github.com/sciensa/node-red-contrib-git-ui/issues"
+    "url": "https://bitbucket.org/sciensa/node-red-contrib-git-ui/issues"
   },
   "keywords": [
     "node-red",
