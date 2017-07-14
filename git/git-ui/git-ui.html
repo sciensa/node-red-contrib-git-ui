@@ -109,8 +109,8 @@
                     <h4 class="modal-title">Warning</h4>
                   </div>
                   <div class="modal-body">
-                    <p>The remote URL was set, but your local files and the remote repository have diverged.<br> Oncoming changes
-                      WILL overwrite your local flows.
+                    <p>The remote URL was set, but your local files and the remote repository have diverged.<br> Before proceeding,
+                      you should export any flows you wish to keep. <br>Oncoming changes WILL overwrite your local flows.
                     </p>
                     <p>Proceed anyway?</p>
                   </div>
@@ -122,6 +122,26 @@
                     <button type="button" class="btn btn-danger" data-dismiss="modal" id="cancelUpdate">
                     <i class="fa fa-times" aria-hidden="true"></i>
                     Cancel
+                  </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal fade" tabindex="-1" role="dialog" id="restartModal">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Restart required</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>Your local data was succesfully updated with the remote repository.<br> However, Node-Red needs to be
+                      restarted in order to reload some of the changes.<br> Please restart Node-Red.</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-info" data-dismiss="modal" id="cancelUpdate">
+                    <i class="fa fa-check" aria-hidden="true"></i>
+                    OK
                   </button>
                   </div>
                 </div>
@@ -726,7 +746,8 @@
                   Alert.success('Local files updated and deployed! Please refresh the page to reload flows.')
                 })
               }).catch(() => {
-                Alert.success('Local files updated! Please restart Node-Red to apply the changes.')
+                $('#restartModal').modal('show')
+                // Alert.success('Local files updated! Please restart Node-Red to apply the changes.')
               })
             },
             error: (jqXHR, textStatus, errorThrown) => {
