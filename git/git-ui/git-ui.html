@@ -145,7 +145,6 @@
         $('.git-ui .tab-pane.commit').on('click', '.btn.btn-primary', (event) => {
           event.preventDefault()
           GitUI.clearErrors()
-
           GitUI.status().then((statusSummary) => {
             if (statusSummary.modified.length > 0 || statusSummary.not_added.length > 0 || statusSummary.deleted.length > 0) {
               if ($('.git-ui .tab-pane.commit textarea').val() === '') {
@@ -201,7 +200,7 @@
         })
 
         $('.git-ui .nav .config').on('click', 'a', (event) => {
-          GitUI.getRemote()
+          GitUI.setRemoteStartup()
         })
 
         $('.git-ui .tab-pane.config input').on('blur', (event) => {
@@ -217,25 +216,34 @@
         $('#saveRemoteUrl').on('click', (event) => {
           event.preventDefault()
           GitUI.clearErrors()
-          GitUI.setRemote($('.git-ui .tab-pane.config input').val()).then(() => {
-            if ($('.git-ui .tab-pane.config input').val() === '') {
-              GitUI.urlRequired()
-              return false
-            } else {
-              GitUI.status().then((statusSummary) => {
-                if (statusSummary.modified.length > 0 || GitUI.getRemote !== $('.git-ui .tab-pane.config input').val()) {
-                  $('#updateModal').modal('show')
-                } else {
-                  GitUI.update('staging', false)
-                }
-              })
-            }
+          GitUI.getRemote().then((previousRemote) => {
+            const newRemote = $('.git-ui .tab-pane.config input').val()
+            GitUI.setRemote($('.git-ui .tab-pane.config input').val()).then(() => {
+              if ($('.git-ui .tab-pane.config input').val() === '') {
+                GitUI.urlRequired()
+                return false
+              } else {
+                GitUI.status().then((statusSummary) => {
+                  if (statusSummary.modified.length > 0 || statusSummary.not_added.length > 0
+                    || statusSummary.deleted.length > 0 || previousRemote !== newRemote) {
+                    $('#updateModal').modal('show')
+                  } else {
+                    GitUI.update('staging', false).then(() => {
+                      GitUI.deployHead('staging')
+                    })
+                  }
+                })
+              }
+            })
+
           })
         })
 
         $('#forceUpdate').on('click', (event) => {
           event.preventDefault()
-          GitUI.update('staging', true)
+          GitUI.update('staging', true).then(() => {
+            GitUI.deployHead('staging')
+          })
         })
 
         $('#cancelUpdate').on('click', (event) => {
@@ -435,13 +443,18 @@
             type: 'GET',
             dataType: 'json',
             success: (r) => {
-              $('#remoteUrl').val(r.url)
-              resolve(r)
+              resolve(r.url)
             },
             error: (jqXHR, textStatus, errorThrown) => {
-              $('#remoteUrl').val('')
               reject(JSON.parse(jqXHR.responseText).error)
             },
+          })
+        }),
+        setRemoteStartup: () => new Promise((resolve, reject) => {
+          GitUI.getRemote().then((url) => {
+            $('#remoteUrl').val(url)
+          }).catch(() => {
+            $('#remoteUrl').val('')
           })
         }),
         setRemote: (url) => new Promise((resolve, reject) => {
@@ -569,6 +582,23 @@
             }
           })
         }),
+        showFile: (hash, filename) => new Promise((resolve, reject) => {
+          $.ajax({
+            url: `show/${hash}` + (filename ? `/${filename}` : ''),
+            type: 'GET',
+            dataType: 'json',
+            success: (result) => {
+              resolve(result)
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              if (typeof jqXHR.responseText === 'object') {
+                reject(JSON.parse(jqXHR.responseText).error)
+              } else {
+                reject(jqXHR.responseText)
+              }
+            }
+          })
+        }),
         status: () => new Promise((resolve, reject) => {
           $.ajax({
             url: 'status',
@@ -597,7 +627,7 @@
         }),
         update: (branch, force) => new Promise((resolve, reject) => {
           $.ajax({
-            url: `update/${branch}?force=${force}`,
+            url: `update/${branch}` + (force ? `?force=${force}` : ''),
             type: 'PUT',
             dataType: 'json',
             beforeSend: (r) => {
@@ -609,7 +639,6 @@
             },
             success: (r) => {
               $('.git-ui .tab-pane.config .btn.btn-primary').prop('disabled', false)
-              Alert.success('Local files updated! Restart Node-Red to reload flows.')
               resolve(r)
             },
             error: (jqXHR, textStatus, errorThrown) => {
@@ -649,7 +678,7 @@
         checkRemote: () => new Promise((resolve, reject) => {
           GitUI.getRemote().then((r) => {
             // Check if remote url is set
-            if (r.url) {
+            if (r) {
               GitUI.status().then((statusSummary) => {
                 // Check if current branch is 'staging'
                 if (statusSummary.tracking && statusSummary.tracking.substring(statusSummary.tracking.indexOf('/') + 1) === 'staging') {
@@ -665,6 +694,48 @@
               Alert.error('A remote URL is not set.', 'Please enter the remote repository URL at the config tab.')
               GitUI.toggleEnableCommit(false)
               reject()
+            }
+          })
+        }),
+        deploy: (flow) => new Promise((resolve, reject) => {
+          $.ajax({
+            url: 'deploy',
+            type: 'POST',
+            dataType: 'json',
+            data: flow,
+            success: () => {
+              resolve()
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              if (typeof jqXHR.responseText === 'object') {
+                reject(JSON.parse(jqXHR.responseText).error)
+              } else {
+                reject(jqXHR.responseText)
+              }
+            }
+          })
+        }),
+        deployHead: (branchName) => new Promise((resolve, reject) => {
+          $.ajax({
+            url: `logs/${branchName}`,
+            type: 'GET',
+            dataType: 'json',
+            success: (logs) => {
+              GitUI.showFile(logs.commits[0].hash, null).then((file) => {
+                GitUI.deploy(file).then(() => {
+                  Alert.success('Local files updated and deployed! Please refresh the page to reload flows.')
+                })
+              }).catch(() => {
+                Alert.success('Local files updated! Please restart Node-Red to apply the changes.')
+              })
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+              reject(JSON.parse(jqXHR.responseText).error)
+            },
+            complete: () => {
+              setTimeout(() => {
+                $('.git-ui .alert').fadeOut('fast')
+              }, 10000)
             }
           })
         })

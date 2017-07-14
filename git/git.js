@@ -1,8 +1,9 @@
 const path = require('path')
+const http = require('http')
 const gitUi = require('./git-ui/git-ui')
 
 module.exports = (RED) => {
-  function gitUiNode(config) {
+  function gitUiNode (config) {
     RED.nodes.createNode(this, config)
   }
   RED.nodes.registerType('git-ui', gitUiNode)
@@ -120,11 +121,37 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.put('/git-ui/createLocalRepo', (req, res) => {
-    const userDir = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME
+    const userDir = RED.settings.userDir || RED.process.env.NODE_RED_HOME
     gitUi.createLocalRepo(userDir).then((url) => {
       res.status(200).send({ status: 'OK' })
     }).catch((err) => {
       res.status(500).send(err)
     })
+  })
+
+  RED.httpAdmin.post('/git-ui/deploy', (req, res) => {
+    const options = {
+      hostname: 'localhost',
+      port: RED.settings.uiPort,
+      path: '/flows',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Node-RED-Deployment-Type': 'reload'
+      }
+    }
+    const redapi = http.request(options, (r) => {
+    })
+
+    redapi.on('error', (e) => {
+      res.status(500).send({ error: e })
+    })
+
+    redapi.on('response', () => {
+      res.status(204).send()
+    })
+
+    redapi.write(JSON.stringify(req.body))
+    redapi.end()
   })
 }
