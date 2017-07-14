@@ -182,11 +182,17 @@ module.exports = {
                 if (err) {
                   reject(err)
                 } else {
-                  git.raw(['push', '--set-upstream', `${remote}/${branchName}`], (err) => {
+                  git.push(remote, branchName, (err) => {
                     if (err) {
                       reject(err)
                     } else {
-                      resolve()
+                      git.raw(['branch', '-u', `${remote}/${branchName}`], (err) => {
+                        if (err) {
+                          reject(err)
+                        } else {
+                          resolve()
+                        }
+                      })
                     }
                   })
                 }

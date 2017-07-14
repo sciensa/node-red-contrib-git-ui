@@ -113,8 +113,8 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.put('/git-ui/update/:branchName', (req, res) => {
-    gitUi.update(req.params.branchName, req.query.force || false).then((url) => {
-      res.status(200).send({ url })
+    gitUi.update(req.params.branchName, req.query.force || false).then(() => {
+      res.status(204).send()
     }).catch((err) => {
       res.status(500).send({ error: err })
     })
