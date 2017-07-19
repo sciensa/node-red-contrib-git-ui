@@ -69,7 +69,7 @@
                 })
               },
               error: (jqXHR, textStatus, errorThrown) => {
-                Alert.error('Error on create local repository!', jqXHR.responseText)
+                Alert.error('Error on create local repository!', 'node-red was started using the installation directory or the directory that contains node_modules/node-red as userDir. This will cause issues with git-ui. Please see README for more details.')
               }
             })
           }

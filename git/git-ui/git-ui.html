@@ -731,8 +731,7 @@
               }
             })
           }).catch((err) => {
-            console.log(err)
-            Alert.error('Unable to start git-ui', err)
+            Alert.error('Unable to start git-ui', 'node-red was started using the installation directory or the directory that contains node_modules/node-red as userDir. This will cause issues with git-ui. Please see README for more details.')
             GitUI.disable()
             GitUI.toggleEnableCommit(false)
           })

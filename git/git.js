@@ -5,7 +5,7 @@ const gitUi = require('./git-ui/git-ui')
 module.exports = (RED) => {
   const userDir = RED.settings.userDir
   const nodeRedHome = process.env.NODE_RED_HOME
-  function gitUiNode(config) {
+  function gitUiNode (config) {
     RED.nodes.createNode(this, config)
   }
   RED.nodes.registerType('git-ui', gitUiNode)
