@@ -3,8 +3,9 @@ const http = require('http')
 const gitUi = require('./git-ui/git-ui')
 
 module.exports = (RED) => {
-  const userDir = RED.settings.userDir || RED.process.env.NODE_RED_HOME
-  function gitUiNode (config) {
+  const userDir = RED.settings.userDir
+  const nodeRedHome = process.env.NODE_RED_HOME
+  function gitUiNode(config) {
     RED.nodes.createNode(this, config)
   }
   RED.nodes.registerType('git-ui', gitUiNode)
@@ -14,7 +15,7 @@ module.exports = (RED) => {
     gitUi.sendFile(res, filename)
   })
 
-  RED.httpAdmin.post('/git-ui/commit', (req, res) => {    
+  RED.httpAdmin.post('/git-ui/commit', (req, res) => {
     gitUi.commit(userDir, req.body.message).then((result) => {
       res.status(200).send({ status: 'OK', result })
     }).catch((err) => {
@@ -120,8 +121,15 @@ module.exports = (RED) => {
     })
   })
 
+  RED.httpAdmin.get('/git-ui/checkuserdir', (req, res) => {
+    if (userDir && userDir !== nodeRedHome && userDir !== nodeRedHome.substring(0, nodeRedHome.indexOf('/node_modules/node-red'))) {
+      res.status(204).send()
+    } else {
+      res.status(500).send({ error: 'node-red was started using the installation directory or the directory that contains node_modules/node-red as userDir. This will cause issues with git-ui. Please see README for more details.' })
+    }
+  })
+
   RED.httpAdmin.put('/git-ui/createLocalRepo', (req, res) => {
-    const userDir = RED.settings.userDir || RED.process.env.NODE_RED_HOME
     gitUi.createLocalRepo(userDir).then((url) => {
       res.status(200).send({ status: 'OK' })
     }).catch((err) => {

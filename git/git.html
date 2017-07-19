@@ -44,22 +44,32 @@
         var gitUi = {
           createlocalRepo: () => {
             $.ajax({
-              url: 'git-ui/createlocalRepo',
-              type: 'put',
+              url: 'git-ui/checkuserdir',
+              type: 'get',
               dataType: 'json',
               success: (r) => {
-                $('.git-ui .tab-pane.commit textarea').val('')
-                Alert.success('Local Repository sucessfuly created!')
+                $.ajax({
+                  url: 'git-ui/createlocalRepo',
+                  type: 'put',
+                  dataType: 'json',
+                  success: (r) => {
+                    $('.git-ui .tab-pane.commit textarea').val('')
+                    Alert.success('Local Repository sucessfuly created!')
+                  },
+                  error: (jqXHR, textStatus, errorThrown) => {
+                    Alert.error('Error on create local repository!', jqXHR.responseText)
+                  },
+                  complete: (r) => {
+                    $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false)
+                    $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
+                    setTimeout(() => {
+                      $('.git-ui .alert').fadeOut('fast')
+                    }, 10000)
+                  }
+                })
               },
               error: (jqXHR, textStatus, errorThrown) => {
                 Alert.error('Error on create local repository!', jqXHR.responseText)
-              },
-              complete: (r) => {
-                $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', false)
-                $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
-                setTimeout(() => {
-                  $('.git-ui .alert').fadeOut('fast')
-                }, 10000)
               }
             })
           }

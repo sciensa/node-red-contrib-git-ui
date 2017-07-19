@@ -695,26 +695,46 @@
           $('.git-ui .tabbable li a').addClass('disabled').removeAttr('data-toggle')
           $('.git-ui .alert.alert-danger .close').hide()
         },
-        checkRemote: () => new Promise((resolve, reject) => {
-          GitUI.getRemote().then((r) => {
-            // Check if remote url is set
-            if (r) {
-              GitUI.status().then((statusSummary) => {
-                // Check if current branch is 'staging'
-                if (statusSummary.tracking && statusSummary.tracking.substring(statusSummary.tracking.indexOf('/') + 1) === 'staging') {
-                  resolve()
-                } else {
-                  Alert.error('The current branch is not \'staging\'. Please click on \'Save and Update\' at the config tab to create the correct branch.')
-                  GitUI.toggleEnableCommit(false)
-                  reject()
-                }
-              })
-
-            } else {
-              Alert.error('A remote URL is not set.', 'Please enter the remote repository URL at the config tab.')
-              GitUI.toggleEnableCommit(false)
-              reject()
+        checkUserDir: () => new Promise((resolve, reject) => {
+          $.ajax({
+            url: 'checkuserdir',
+            type: 'GET',
+            dataType: 'application/json',
+            success: () => {
+              resolve()
+            },
+            error: (err) => {
+              reject(err)
             }
+          })
+        }),
+        checkRemote: () => new Promise((resolve, reject) => {
+          GitUI.checkUserDir().then(() => {
+            GitUI.getRemote().then((r) => {
+              // Check if remote url is set
+              if (r) {
+                GitUI.status().then((statusSummary) => {
+                  // Check if current branch is 'staging'
+                  if (statusSummary.tracking && statusSummary.tracking.substring(statusSummary.tracking.indexOf('/') + 1) === 'staging') {
+                    resolve()
+                  } else {
+                    Alert.error('The current branch is not \'staging\'. Please click on \'Save and Update\' at the config tab to create the correct branch.')
+                    GitUI.toggleEnableCommit(false)
+                    reject()
+                  }
+                })
+
+              } else {
+                Alert.error('A remote URL is not set.', 'Please enter the remote repository URL at the config tab.')
+                GitUI.toggleEnableCommit(false)
+                reject()
+              }
+            })
+          }).catch((err) => {
+            console.log(err)
+            Alert.error('Unable to start git-ui', err)
+            GitUI.disable()
+            GitUI.toggleEnableCommit(false)
           })
         }),
         deploy: (flow) => new Promise((resolve, reject) => {
