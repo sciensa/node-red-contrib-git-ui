@@ -3,6 +3,7 @@ const http = require('http')
 const gitUi = require('./git-ui/git-ui')
 
 module.exports = (RED) => {
+  const userDir = RED.settings.userDir || RED.process.env.NODE_RED_HOME
   function gitUiNode (config) {
     RED.nodes.createNode(this, config)
   }
@@ -13,8 +14,7 @@ module.exports = (RED) => {
     gitUi.sendFile(res, filename)
   })
 
-  RED.httpAdmin.post('/git-ui/commit', (req, res) => {
-    const userDir = RED.settings.userDir || RED.rocess.env.NODE_RED_HOME
+  RED.httpAdmin.post('/git-ui/commit', (req, res) => {    
     gitUi.commit(userDir, req.body.message).then((result) => {
       res.status(200).send({ status: 'OK', result })
     }).catch((err) => {
@@ -28,7 +28,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/logs/:branchName', (req, res) => {
-    gitUi.logs(req.params.branchName).then((logList) => {
+    gitUi.logs(userDir, req.params.branchName).then((logList) => {
       res.status(200).send({ commits: logList.all })
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -36,7 +36,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/branches', (req, res) => {
-    gitUi.branches().then((branchList) => {
+    gitUi.branches(userDir).then((branchList) => {
       res.status(200).send({ branches: branchList.all, current: branchList.current })
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -46,7 +46,7 @@ module.exports = (RED) => {
   RED.httpAdmin.put('/git-ui/checkout/:branchName', (req, res) => {
     const userDir = RED.settings.userDir || RED.process.env.NODE_RED_HOME
     gitUi.cwd(userDir).then(() => {
-      gitUi.checkout(req.params.branchName).then(() => {
+      gitUi.checkout(userDir, req.params.branchName).then(() => {
         res.status(200).send({ status: 'OK' })
       }).catch((err) => {
         res.status(500).send({ error: err })
@@ -57,7 +57,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/show/:hash/:fileName', (req, res) => {
-    gitUi.show(req.params.hash, req.params.fileName).then((object) => {
+    gitUi.show(userDir, req.params.hash, req.params.fileName).then((object) => {
       res.status(200).send({ object })
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -65,7 +65,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/show/:hash', (req, res) => {
-    gitUi.show(req.params.hash, RED.settings.get('flowFile') || 'flows_' + require('os').hostname() + '.json').then((object) => {
+    gitUi.show(userDir, req.params.hash, RED.settings.get('flowFile') || 'flows_' + require('os').hostname() + '.json').then((object) => {
       res.status(200).send({ object })
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -81,7 +81,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/remote', (req, res) => {
-    gitUi.remoteGet().then((url) => {
+    gitUi.remoteGet(userDir).then((url) => {
       res.status(200).send({ url })
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -89,7 +89,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.put('/git-ui/remote', (req, res) => {
-    gitUi.remoteSet(req.body.url).then((url) => {
+    gitUi.remoteSet(userDir, req.body.url).then((url) => {
       res.status(200).send({ url })
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -97,7 +97,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/fetch', (req, res) => {
-    gitUi.fetch().then(() => {
+    gitUi.fetch(userDir).then(() => {
       res.status(204).send()
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -105,7 +105,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/pull', (req, res) => {
-    gitUi.pull().then(() => {
+    gitUi.pull(userDir).then(() => {
       res.status(204).send()
     }).catch((err) => {
       res.status(500).send({ error: err })
@@ -113,7 +113,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.put('/git-ui/update/:branchName', (req, res) => {
-    gitUi.update(req.params.branchName, req.query.force || false).then(() => {
+    gitUi.update(userDir, req.params.branchName, req.query.force || false).then(() => {
       res.status(204).send()
     }).catch((err) => {
       res.status(500).send({ error: err })

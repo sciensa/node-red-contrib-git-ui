@@ -1,4 +1,3 @@
-const git = require('simple-git')()
 const fs = require('fs')
 const exec = require('child_process').exec
 
@@ -9,7 +8,7 @@ const successInitMessage = 'init written successfully'
 
 module.exports = {
   commit: (userDir, message) => new Promise((resolve, reject) => {
-    // deletes package.json
+    // deconstes package.json
     if (fs.existsSync(`${userDir}/package.json`)) {
       fs.unlink(`${userDir}/package.json`, (err) => {
         if (err && err.code !== fileDoesNotExist) {
@@ -26,7 +25,7 @@ module.exports = {
         reject(stderr)
       } else {
         // commits and pushes all changes to the remote branch
-        git.add('--all').commit(message).push(remote, branch, (ex, data) => {
+        require('simple-git')(userDir).add('--all').commit(message).push(remote, branch, (ex, data) => {
           if (ex) {
             reject(ex)
           } else {
@@ -39,7 +38,7 @@ module.exports = {
 
   createLocalRepo: (userDir) => new Promise((resolve, reject) => {
     if (!fs.existsSync(`${userDir}/.git`)) {
-      git.init()
+      require('simple-git')(userDir).init()
     }
   }),
 
@@ -52,8 +51,8 @@ module.exports = {
     }
   },
 
-  tags: () => new Promise((resolve, reject) => {
-    git.tags({}, (err, tags) => {
+  tags: (userDir) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).tags({}, (err, tags) => {
       if (err) {
         reject(err)
       } else {
@@ -62,8 +61,8 @@ module.exports = {
     })
   }),
 
-  logs: branchName => new Promise((resolve, reject) => {
-    git.log([branchName], (err, result) => {
+  logs: (userDir, branchName) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).log([branchName], (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -72,8 +71,8 @@ module.exports = {
     })
   }),
 
-  branches: () => new Promise((resolve, reject) => {
-    git.branch(['-vv'], (err, result) => {
+  branches: (userDir) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).branch(['-vv'], (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -82,8 +81,8 @@ module.exports = {
     })
   }),
 
-  checkout: branchName => new Promise((resolve, reject) => {
-    git.checkout(branchName, (err, result) => {
+  checkout: (userDir, branchName) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).checkout(branchName, (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -92,8 +91,8 @@ module.exports = {
     })
   }),
 
-  show: (hash, fileName) => new Promise((resolve, reject) => {
-    git.show([`${hash}:${fileName}`], (err, result) => {
+  show: (userDir, hash, fileName) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).show([`${hash}:${fileName}`], (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -102,8 +101,8 @@ module.exports = {
     })
   }),
 
-  status: () => new Promise((resolve, reject) => {
-    git.status((err, result) => {
+  status: (userDir) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).status((err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -112,17 +111,17 @@ module.exports = {
     })
   }),
 
-  cwd: dir => new Promise((resolve, reject) => {
+  cwd: userDir => new Promise((resolve, reject) => {
     try {
-      git.cwd(dir)
-      resolve(dir)
+      require('simple-git')(userDir).cwd(userDir)
+      resolve(userDir)
     } catch (e) {
       reject(e)
     }
   }),
 
-  remoteGet: () => new Promise((resolve, reject) => {
-    git.getRemotes(true, (err, result) => {
+  remoteGet: (userDir) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).getRemotes(true, (err, result) => {
       if (err) {
         reject(err)
       } else {
@@ -131,7 +130,8 @@ module.exports = {
     })
   }),
 
-  remoteSet: url => new Promise((resolve, reject) => {
+  remoteSet: (userDir, url) => new Promise((resolve, reject) => {
+    const git = require('simple-git')(userDir)
     git.getRemotes(true, (err, result) => {
       if (err) {
         reject(err)
@@ -157,8 +157,8 @@ module.exports = {
     })
   }),
 
-  fetch: () => new Promise((resolve, reject) => {
-    git.fetch(['--all'], (err) => {
+  fetch: (userDir) => new Promise((resolve, reject) => {
+    require('simple-git')(userDir).fetch(['--all'], (err) => {
       if (err) {
         reject(err)
       } else {
@@ -167,7 +167,8 @@ module.exports = {
     })
   }),
 
-  update: (branchName, force) => new Promise((resolve, reject) => {
+  update: (userDir, branchName, force) => new Promise((resolve, reject) => {
+    const git = require('simple-git')(userDir)
     git.fetch(['--all']).raw(['branch', '-r'], (err, result) => {
       if (err) {
         reject(err)
