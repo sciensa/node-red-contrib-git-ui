@@ -74,7 +74,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.get('/git-ui/status', (req, res) => {
-    gitUi.status().then((statusSummary) => {
+    gitUi.status(userDir).then((statusSummary) => {
       res.status(200).send({ statusSummary })
     }).catch((err) => {
       res.status(500).send({ error: err })
