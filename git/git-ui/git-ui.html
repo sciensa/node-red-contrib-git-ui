@@ -530,8 +530,8 @@
                 return $('<a>', {
                   href: `show/${commit.hash}`,
                   class: 'list-group-item',
-                  text: commit.message
-                }).append($('<small>', { text: `${moment(commit.date, "YYYY-MM-DD hh:mm:ss").fromNow()} • ${commit.author_name}` }))
+                  text: commit.message + ' '
+                }).append($('<small>', { text: `${moment.utc(commit.date, "YYYY-MM-DD hh:mm:ss").from(moment.utc())} • ${commit.author_name}` }))
               })
               $('.tab-pane.logs .commits').empty().append(commits)
             },
