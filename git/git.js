@@ -16,7 +16,7 @@ module.exports = (RED) => {
   })
 
   RED.httpAdmin.post('/git-ui/commit', (req, res) => {
-    gitUi.commit(userDir, req.body.message).then((result) => {
+    gitUi.commit(userDir, req.body.message, req.body.author).then((result) => {
       res.status(200).send({ status: 'OK', result })
     }).catch((err) => {
       res.status(500).send(err)

@@ -122,5 +122,7 @@ typings/
 # dotenv environment variables file
 .env
 
+# vscode
+.vscode
 
 # End of https://www.gitignore.io/api/node

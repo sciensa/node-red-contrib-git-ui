@@ -436,7 +436,7 @@
             url: 'commit',
             type: 'POST',
             dataType: 'json',
-            data: $('.git-ui .tab-pane.commit form').serialize(),
+            data: $('.git-ui .tab-pane.commit form').serialize().concat(GitUI.getAuthor()),
             beforeSend: (r) => {
               $('.git-ui .tab-pane.commit .btn.btn-primary').prop('disabled', true)
               $('.git-ui .tab-pane.commit .btn.btn-primary i').toggleClass('fa-check').toggleClass('fa-refresh fa-spin')
@@ -456,6 +456,10 @@
               }, 10000)
             }
           })
+        },
+        getAuthor: () => {
+          return parent.RED.settings.user && parent.RED.settings.user.fullname && parent.RED.settings.user.email ? 
+              `&author=${parent.RED.settings.user.fullname} <${parent.RED.settings.user.email}>` : ''
         },
         getRemote: () => new Promise((resolve, reject) => {
           $.ajax({
@@ -672,9 +676,6 @@
               $('.git-ui .tab-pane.config .btn.btn-primary i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
               $('#forceUpdate i').toggleClass('fa-refresh fa-spin').toggleClass('fa-check')
               $('#updateModal').modal('hide')
-              setTimeout(() => {
-                $('.git-ui .alert').fadeOut('fast')
-              }, 10000)
             }
           })
         }),
@@ -731,7 +732,7 @@
               }
             })
           }).catch((err) => {
-            Alert.error('Unable to start git-ui', 'node-red was started using the installation directory or the directory that contains node_modules/node-red as userDir. This will cause issues with git-ui. Please see README for more details.')
+            Alert.error('Unable to start git-ui', 'Please see the log for more details.')
             GitUI.disable()
             GitUI.toggleEnableCommit(false)
           })

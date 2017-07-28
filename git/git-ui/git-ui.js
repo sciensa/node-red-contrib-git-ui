@@ -7,8 +7,8 @@ const fileDoesNotExist = 'ENOENT'
 const successInitMessage = 'init written successfully'
 
 module.exports = {
-  commit: (userDir, message) => new Promise((resolve, reject) => {
-    // deconstes package.json
+  commit: (userDir, message, author) => new Promise((resolve, reject) => {
+    // deletes previously created package.json
     if (fs.existsSync(`${userDir}/package.json`)) {
       fs.unlink(`${userDir}/package.json`, (err) => {
         if (err && err.code !== fileDoesNotExist) {
@@ -25,7 +25,10 @@ module.exports = {
         reject(stderr)
       } else {
         // commits and pushes all changes to the remote branch
-        require('simple-git')(userDir).add('--all').commit(message).push(remote, branch, (ex, data) => {
+        require('simple-git')(userDir).add('--all')
+        // .commit(message)
+        .raw(author ? ['commit', '-m', `${message}`, '--author', author] : ['commit', '-m', `${message}`])
+        .push(remote, branch, (ex, data) => {
           if (ex) {
             reject(ex)
           } else {
@@ -39,6 +42,7 @@ module.exports = {
   createLocalRepo: (userDir) => new Promise((resolve, reject) => {
     if (!fs.existsSync(`${userDir}/.git`)) {
       require('simple-git')(userDir).init()
+      fs.writeFileSync('.gitignore', 'node_modules')
     }
   }),
 
