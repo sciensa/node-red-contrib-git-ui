@@ -1,4 +1,5 @@
 const git = require('simple-git')()
+const moment = require('moment');
 const fs = require('fs')
 const exec = require('child_process').exec
 
@@ -26,7 +27,7 @@ module.exports = {
         reject(stderr)
       } else {
         // commits and pushes all changes to the remote branch
-        git.add('--all').commit(message).push(remote, branch, (ex, data) => {
+        git.add('--all').commit(message/*).push(remote, branch*/, (ex, data) => {
           if (ex) {
             reject(ex)
           } else {
@@ -67,6 +68,9 @@ module.exports = {
       if (err) {
         reject(err)
       } else {
+        result.all.forEach(commit => {
+          commit.whencommitted = ' ' + moment(commit.date, "YYYY-MM-DD hh:mm:ss").fromNow();
+        })
         resolve(result)
       }
     })
