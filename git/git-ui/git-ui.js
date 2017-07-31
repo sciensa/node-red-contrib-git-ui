@@ -27,7 +27,7 @@ module.exports = {
         reject(stderr)
       } else {
         // commits and pushes all changes to the remote branch
-        git.add('--all').commit(message/*).push(remote, branch*/, (ex, data) => {
+        git.add('--all').commit(message).push(remote, branch, (ex, data) => {
           if (ex) {
             reject(ex)
           } else {
