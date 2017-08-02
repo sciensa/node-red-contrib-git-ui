@@ -25,16 +25,19 @@ module.exports = {
         reject(stderr)
       } else {
         // commits and pushes all changes to the remote branch
+        if (!fs.existsSync(`${userDir}/Dockerfile`)) {
+          process.chdir(userDir)
+          fs.writeFileSync('Dockerfile', 'FROM sinapse/nodered\nCOPY * /data/\nRUN npm install')
+        }
         require('simple-git')(userDir).add('--all')
-        // .commit(message)
-        .raw(author ? ['commit', '-m', `${message}`, '--author', author] : ['commit', '-m', `${message}`])
-        .push(remote, branch, (ex, data) => {
-          if (ex) {
-            reject(ex)
-          } else {
-            resolve(data)
-          }
-        })
+          .raw(author ? ['commit', '-m', `${message}`, '--author', author] : ['commit', '-m', `${message}`])
+          .push(remote, branch, (ex, data) => {
+            if (ex) {
+              reject(ex)
+            } else {
+              resolve(data)
+            }
+          })
       }
     })
   }),
@@ -42,6 +45,7 @@ module.exports = {
   createLocalRepo: (userDir) => new Promise((resolve, reject) => {
     if (!fs.existsSync(`${userDir}/.git`)) {
       require('simple-git')(userDir).init()
+      process.chdir(userDir)
       fs.writeFileSync('.gitignore', 'node_modules')
     }
   }),
