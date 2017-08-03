@@ -1,4 +1,5 @@
 const git = require('simple-git')()
+const moment = require('moment');
 const fs = require('fs')
 const exec = require('child_process').exec
 
@@ -67,6 +68,9 @@ module.exports = {
       if (err) {
         reject(err)
       } else {
+        result.all.forEach(commit => {
+          commit.whencommitted = ' ' + moment(commit.date, "YYYY-MM-DD hh:mm:ss").fromNow();
+        })
         resolve(result)
       }
     })
